@@ -28,9 +28,10 @@ class MainWindow(QMainWindow):
     maxSongFont=100
     maxTalkFont=80
     maxScale=1.0
-    marginRatio=0.1
+    margins=[0.05,0.05,0.05,0.05]#left,top,right,bottom
     isInverted=False
     audioDevice :QtMultimedia.QAudioOutput
+    
     def __init__(self):
         super().__init__()
         self.mediaPlayer = QtMultimedia.QMediaPlayer(self)
@@ -121,42 +122,23 @@ class MainWindow(QMainWindow):
             pass
 
     def resizeEvent(self, a0):
-        #self.view.fitInView(self.view.sceneRect(),Qt.AspectRatioMode.KeepAspectRatio)
 
         self.textDisplay.adjustSize()
-        #self.textDisplay.paint(QPainter(QPaintDevice()))
-        print(self.textDisplay.textWidth())
-        self.textDisplay
         bounds = self.textDisplay.boundingRect()
-        
-        print(bounds,"bounds")
-        viewSize = bounds.size()
-        sceneSize = self.scene.sceneRect().size()
-        scale_x = viewSize.width() / sceneSize.width() if sceneSize.width() else self.maxScale
-        scale_y = viewSize.height() / sceneSize.height() if sceneSize.height() else self.maxScale
-        scale_factor = min(scale_x*(1-self.marginRatio), scale_y*(1-self.marginRatio),self.maxScale)
-        s=scale_factor*0+1
-        print(scale_x,scale_y,scale_factor,"=SF")
-        #self.textDisplay.setPos(-bounds.width()*s / 2, -bounds.height()*s / 2)
-        self.scene.setSceneRect(bounds.adjusted(-bounds.width()*s / 2, -bounds.height()*s / 2,
-                                                bounds.width()*s / 2, bounds.height()*s / 2))
-        self.view.fitInView(self.view.sceneRect(),Qt.AspectRatioMode.KeepAspectRatio)
-        """
-        # Force view to update fit
-        self.view.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+        maxLam=3
+        lam=min(self.view.width()/bounds.width(),self.view.height()/bounds.height()) if bounds.width() else 1
+        if lam<=maxLam:
+            self.scene.setSceneRect(bounds.adjusted(-bounds.width() * self.margins[0], -bounds.height() *self.margins[1],
+                                                           bounds.width() * self.margins[2], bounds.height() *self.margins[2]))
+        else:
+            l=maxLam/lam
+            print(l)
+            bounds.setWidth(bounds.width()*l)
+            bounds.setHeight(bounds.height()*l)
+            self.scene.setSceneRect(bounds.adjusted(-bounds.width() * self.margins[0], -bounds.height() *self.margins[1],
+                                                           bounds.width() * self.margins[2],  bounds.height()* self.margins[2]))
 
-        viewSize = self.view.size()
-        sceneSize = self.scene.sceneRect().size()
-        
-        scale_x = viewSize.width() / sceneSize.width() if sceneSize.width() else self.maxScale
-        scale_y = viewSize.height() / sceneSize.height() if sceneSize.height() else self.maxScale
-        scale_factor = min(scale_x*(1-self.marginRatio), scale_y*(1-self.marginRatio),self.maxScale)
-        transform = QTransform().scale(scale_factor, scale_factor)
-        self.view.setTransform(transform)
-        """
-        #print(self.textDisplay.size(),"=s.t.s()")
-        print(self.view.size(),"=s.v.s()",self.size(),"=s.s()")
-        #print(scale_factor)
+        self.view.fitInView(self.view.sceneRect(),Qt.AspectRatioMode.KeepAspectRatio)
         
         super().resizeEvent(a0)
     def invert(self):
@@ -189,17 +171,9 @@ class MainWindow(QMainWindow):
 
         bounds = self.textDisplay.boundingRect()
         
-        print(bounds,"bounds")
-        viewSize = bounds.size()
-        sceneSize = self.scene.sceneRect().size()
-        scale_x = viewSize.width() / sceneSize.width() if sceneSize.width() else self.maxScale
-        scale_y = viewSize.height() / sceneSize.height() if sceneSize.height() else self.maxScale
-        scale_factor = min(scale_x*(1-self.marginRatio), scale_y*(1-self.marginRatio),self.maxScale)
-        s=scale_factor*0+1
-        print(scale_x,scale_y,scale_factor,"=SF")
         #self.textDisplay.setPos(-bounds.width()*s / 2, -bounds.height()*s / 2)
-        self.scene.setSceneRect(bounds.adjusted(-bounds.width()*s / 2, -bounds.height()*s / 2,
-                                                bounds.width()*s / 2, bounds.height()*s / 2))
+        self.scene.setSceneRect(bounds.adjusted(-bounds.width()*self.margins[0], -bounds.height()*self.margins[1],
+                                                bounds.width()*self.margins[2], bounds.height()*self.margins[3]))
         self.view.fitInView(self.view.sceneRect(),Qt.AspectRatioMode.KeepAspectRatio)
         #self.textDisplay.setPos(0,0)
         #self.textDisplay.setTextWidth(self.width())

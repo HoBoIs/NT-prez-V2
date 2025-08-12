@@ -3,6 +3,8 @@ from talk import Talk, TalkState, readTalks
 from state import State
 from song import *
 from songReader import readSongs
+import os
+import shutil
 
 @dataclass
 class DisplayWindowData:
@@ -13,6 +15,8 @@ class DisplayWindowData:
     
     def __init__(self,mainWindow):
         self.songs=readSongs("./res/songs/")
+        if not os.path.isfile("./res/talks.json"):
+            shutil.copy("./res/default_talks.json","./res/talks.json")
         self.talks = readTalks("./res/talks.json")
         self.musics = [] #TODO
         self.state=TalkState(mainWindow,self.talks[1])

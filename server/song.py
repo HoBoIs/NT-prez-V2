@@ -13,8 +13,9 @@ from state import State
 class SongState(State):
     actual :Song =Song([],[],"")
     verseIdx: int = 0
-    def __init__(self,mainWindow,song):
+    def __init__(self,mainWindow,song,verseIdx=0):
         self.actual=song
+        self.verseIdx=verseIdx
         super().__init__(mainWindow)
     def nextState(self):
         if (self.verseIdx+1 < len(self.actual.verses)):

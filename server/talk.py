@@ -76,7 +76,7 @@ def readTalks(path:str):
             res.append( Talk (
                 title=data['title'],
                 name=data['name'],
-                mediaPath=("./res/songs/" if data['isVideo'] else "./res/talkmusic/")+data['music'],
+                mediaPath=("./res/videos/" if data['isVideo'] else "./res/talkmusic/")+data['music'],
                 isMusic=not data['isVideo'],
                 pictures=data['images'],
                 thanks="TODO"

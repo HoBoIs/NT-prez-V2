@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import json
-
+import os
+import shutil
 
 @dataclass
 class Config:
@@ -16,6 +17,8 @@ class Config:
   talkMusicDir : str
 
 def readConfig():
+    if not os.path.isfile("./res/config.json"):
+        shutil.copy("./res/default_config.json","./res/config.json")
     with open("./res/config.json") as f:
         data=json.load(f)
         return Config(

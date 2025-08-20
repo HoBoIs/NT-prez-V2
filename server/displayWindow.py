@@ -5,6 +5,7 @@ from song import *
 from songReader import readSongs
 import os
 import shutil
+from config import config
 
 @dataclass
 class DisplayWindowData:
@@ -14,9 +15,9 @@ class DisplayWindowData:
     musics:list[str]
     
     def __init__(self,mainWindow):
-        self.songs=readSongs("./res/songs/")
-        if not os.path.isfile("./res/talks.json"):
-            shutil.copy("./res/default_talks.json","./res/talks.json")
-        self.talks = readTalks("./res/talks.json")
+        self.songs=readSongs(config.origDir+"/res/songs/")
+        if not os.path.isfile(config.origDir+"/res/talks.json"):
+            shutil.copy(config.origDir+"./res/default_talks.json","./res/talks.json")
+        self.talks = readTalks(config.origDir+"./res/talks.json")
         self.musics = [] #TODO
         self.state=TalkState(mainWindow,self.talks[1])

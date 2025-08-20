@@ -15,13 +15,16 @@ class Config:
   songDir  : str
   videoDir : str
   talkMusicDir : str
+  origDir : str
 
 def readConfig():
-    if not os.path.isfile("./res/config.json"):
-        shutil.copy("./res/default_config.json","./res/config.json")
-    with open("./res/config.json") as f:
+    origDir= os.path.dirname(__file__)+"/"
+    if not os.path.isfile(origDir+"/res/config.json"):
+        shutil.copy(origDir+"/res/default_config.json",origDir+"/res/config.json")
+    with open(origDir+"/res/config.json") as f:
         data=json.load(f)
         return Config(
+          origDir=origDir,
           maxSongFont=data["maxSongFont"],
           maxTalkFont=data["maxTalkFont"],
           sleepLength=data["sleepLength"],

@@ -17,7 +17,7 @@ class DisplayWindowData:
     def __init__(self,mainWindow):
         self.songs=readSongs(config.origDir+"/res/songs/")
         if not os.path.isfile(config.origDir+"/res/talks.json"):
-            shutil.copy(config.origDir+"./res/default_talks.json","./res/talks.json")
-        self.talks = readTalks(config.origDir+"./res/talks.json")
+            shutil.copy(config.origDir+"/res/default_talks.json","/res/talks.json")
+        self.talks = readTalks(config.origDir+"/res/talks.json")
         self.musics = [] #TODO
         self.state=TalkState(mainWindow,self.talks[1])

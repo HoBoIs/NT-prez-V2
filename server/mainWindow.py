@@ -11,6 +11,7 @@ import PyQt6.QtGui as QtGui
 import PyQt6.QtQuick as QtQuick
 from PyQt6.QtWidgets import QGraphicsScene, QLabel, QWidget
 from PyQt6.QtGui import QFont, QKeyEvent, QPaintDevice, QPainter, QTransform,QColor
+from song import SongListState
 from util import connectOnce
 from talk import TalkState
 def skip():
@@ -158,6 +159,9 @@ class MainWindow(QMainWindow):
             self.data.state.render()
         if a0 !=None and a0.key() ==Qt.Key.Key_F9:
             self.displayVerse("111<br/>22<br/>3333asdasef as")
+        if a0 !=None and a0.key() ==Qt.Key.Key_F8:
+            self.data.state=SongListState(self)
+            self.data.state.render()
         if a0 !=None and a0.key() ==Qt.Key.Key_F10:
             print(1)
             if type(self.data.state) == TalkState:

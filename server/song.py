@@ -30,14 +30,16 @@ class SongState(State):
     def render(self):
         self.mainWindow.displayVerse(self.actual.verses[self.verseIdx])
 import random
+from config import config
 
 class SongListState(State):
     songs:list[Song]=[]
     SongIdx:int=0
     atEnd=False
     logos=["",""]
-    def __init__(self):
-        self.songs=readSongs('./res/songs/')
+    def __init__(self,mainWindow):
+        self.songs=readSongs(config.songDir)
+        super().__init__(mainWindow)
     def nextState(self):
         if (self.childState):
             self.childState.nextState()

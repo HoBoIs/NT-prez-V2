@@ -13,6 +13,8 @@ class State:
     parentState: "None | State" =None
     childState: "None | State" =None
     imageInvert=True
+    def __init__(self,mw):
+        self.mainWindow=mw
     def render(self):
         pass
     def notifyParentNxt(self):

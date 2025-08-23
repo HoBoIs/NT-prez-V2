@@ -19,9 +19,9 @@ class Config:
 
 def readConfig():
     origDir= os.path.dirname(__file__)+"/"
-    if not os.path.isfile(origDir+"/res/config.json"):
-        shutil.copy(origDir+"/res/default_config.json",origDir+"/res/config.json")
-    with open(origDir+"/res/config.json") as f:
+    if not os.path.isfile(origDir+"res/config.json"):
+        shutil.copy(origDir+"res/default_config.json",origDir+"res/config.json")
+    with open(origDir+"res/config.json") as f:
         data=json.load(f)
         return Config(
           origDir=origDir,
@@ -30,9 +30,9 @@ def readConfig():
           sleepLength=data["sleepLength"],
           port=data["port"],
           logo_images=data["logo_images"],
-          musicDir=data["musicDir"],
-          imageDir=data["imageDir"],
-          songDir=data["songDir"],
-          videoDir=data["videoDir"],
-          talkMusicDir=data["talkMusicDir"])
+          musicDir=origDir+data["musicDir"],
+          imageDir=origDir+data["imageDir"],
+          songDir=origDir+data["songDir"],
+          videoDir=origDir+data["videoDir"],
+          talkMusicDir=origDir+data["talkMusicDir"])
 config=readConfig()

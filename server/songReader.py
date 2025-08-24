@@ -14,18 +14,27 @@ def readSong(path:str)->Song:
 
 def readSongs(path:str)->list[Song]:
     res :list[Song]=[]
-    for file in os.listdir(path+"/default"):
-        if file.endswith(".json"):
-            try:
-                res+=[readSong(file)]
-            except Exception as e:
-                print(e)
-                pass
-    res+=[Song(["---SEPARATOR---"],[],"")]
+    was=set()
     for file in os.listdir(path+"/custom"):
+        file=(path+"custom/")+file
         if file.endswith(".json"):
             try:
                 res+=[readSong(file)]
+                for t in res[-1].titles:
+                    was.add(t)
             except Exception as e:
                 print(e)
+    #res+=[Song(["---SEPARATOR---"],[],"")]
+    for file in os.listdir(path+"/default"):
+        file=(path+"default/")+file
+
+        if file.endswith(".json"):
+            try:
+                tmp=readSong(file)
+                tmp.titles=list( filter(lambda x: not x in was ,tmp.titles))
+                if len(tmp.titles)==0:
+                    res+=[tmp]
+            except Exception as e:
+                print(e)
+                print(file)
     return res

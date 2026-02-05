@@ -1,6 +1,6 @@
 from dataclasses import dataclass,field
 from enum import Enum
-#from mainWindow import MainWindow
+import mainWindow
 from state import State
 from song import Song
 @dataclass
@@ -21,7 +21,7 @@ class TalkState(State):
         thank=2
     p:part
     idx=0
-    def __init__(self, mainWindow : "MainWindow",t:Talk):
+    def __init__(self, mainWindow : mainWindow.MainWindow ,t:Talk):
         self.talk=t
         self.p=self.part.during
         super().__init__(mainWindow)

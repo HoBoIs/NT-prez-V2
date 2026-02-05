@@ -6,3 +6,5 @@ server/res/talkmusic/*
 server/res/talks.json
 server/res/config.json
 server/res/videos/*
+__pycache__
+server/res/images/*

@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+        .scrollable {
+            height: 200px;
+            width: 200px;
+            overflow-y: auto;
+            border: 1px solid #aaa;
+        }
+        .scrollable button {
+            width: 100%;
+            margin: 0px 0;
+        }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src={{ url_for('static', filename='js/coms.js') }}> </script>
+    <script>
+    </script>
+    <div id="SongCont" class="container">
+      <div id="NavButtons">
+        <button id="Prev" type="button" onclick="('/command','Prev')"> ← </button>
+        <button id="Next" type="button" onclick="('/command','Next')"> → </button>
+      </div>
+      <input type="text" id="SongFilter">
+      <div class="scrollable" id="SongScroll">
+      </div>
+    </div>
+    <div id="TalkCont" class="container">
+      <div id="NavButtons">
+        <button id="Music" type="button" onclick="('/command','Music')">
+          Zene {{x}}
+        </button>
+        <button id="Thanks" type="button" onclick="('/command','Thanks')">
+          Köszönjük
+        </button>
+      </div>
+      <input type="text" id="TalkFilter">
+      <div class="scrollable" id="TalkScroll">
+      </div>
+    </div>
+    <div id="MusicCont" class="container">
+      <div id="MusicControll">
+        <button onclick="send('/soundSet','Play')" id="PlayBtn">▶️ </button>
+        <button onclick="send('/soundSet','Pause')" id="PauseBtn">⏸️  </button>
+        <button onclick="send('/soundSet','Stop')" id="StopBtn"> ⏹️  </button>
+        <input type="checkbox" id="autoplay" onchange="send('/soundSet','Auto:'+this.checked)" />
+        <label for="autoplay" > 🔁 </label>
+        <input type="range" id="volume" name="volume" min="0" max="30" onchange="send('/soundSet','Volume:'+this.value)" />
+        <label for="volume"> Hangerő </label>
+      </div>
+      <input type="text" id="MusicFilter">
+      <div class="scrollable" id="MusicScroll">
+      </div>
+    </div>
+    <div id="SettingsCont" class="container">
+      <button id="invert" onclick="('/command','Invert')"> Invertálás </button>
+      <div id="marginSetter">
+        
+      </div>
+
+      <div class="scrollable"></div>
+    </div>
+    <div id="ModeSelector">
+      <button id="SongMode" type="button" onclick="selectMode('Song')">
+        Énekek
+      </button>
+      <button id="TalkMode" type="button" onclick="selectMode('Talk')">
+        Bevezetők
+      </button>
+      <button id="MusicMode" type="button" onclick="selectMode('Music')">
+        Zenék
+      </button>
+      <button id="SettingsMode" type="button" onclick="selectMode('Settings')">
+        ⚙️
+      </button>
+    </div>
+    <script>
+      loadSongs();
+      loadTalks();
+      loadMusic();
+      makeFilter("Song")
+      makeFilter("Talk")
+      makeFilter("Music")
+      selectMode("Song")
+    </script>
+  </body>
+</html>,000

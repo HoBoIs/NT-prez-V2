@@ -22,8 +22,9 @@ async function loadData(chanel,data,contID){
   for (let i=0; i<items.length; i++){
     const btn=document.createElement("button");
     btn.innerHTML = items[i].text;
+    btn.data = items[i].searchData
     btn.onclick = () => 
-      send(chanel,{title:items[i].title,index:i})
+      send(chanel,{title:items[i].return_value,index:i})
     cont.appendChild(btn);
   }
 
@@ -38,10 +39,28 @@ async function loadTalks(){
 async function loadMusic(){
   return loadData("/sendMusic","MusicList", "MusicScroll")
 }
+async function loadTemplate(){
+  //TODO
+  /*const itemsC= await fetch(data)
+  const items = await itemsC.json();
+  const cont=document.getElementById("TemplateScroll")
+  cont.innerHTML=""
+
+  for (let i=0; i<items.length; i++){
+    const dv=document.createElement("div");
+    const btn=document.createElement("button");
+    btn.innerHTML = items[i].text;
+    btn.data = items[i].searchData
+    btn.onclick = () => 
+      send("/sendTemplate",{title:items[i].text,index:i})
+    cont.appendChild(dv);
+    dv.appendChild(btn);
+  }*/
+}
 function filterBtns(input,buttons){
   buttons.forEach(btn=>{
 
-    btn.style.display= sanitize(btn.textContent).includes(sanitize(input.value))?"":"none"
+    btn.style.display= sanitize(btn.data).includes(sanitize(input.value))?"":"none"
   })
 }
 function makeFilter(id){
@@ -53,5 +72,8 @@ function makeFilter(id){
 }
 function selectMode(mode){
   document.querySelectorAll(".container").forEach(cont => cont.style.display = cont.id==mode+"Cont"?"":"none")
+}
+function selectSubMode(mode){
+  document.querySelectorAll(".SubMode").forEach(cont=>cont.style.display=cont.id==mode?"":"none")
 }
 

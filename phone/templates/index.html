@@ -1,66 +1,82 @@
 <!doctype html>
 <html>
   <head>
-    <style>
-        .scrollable {
-            height: 200px;
-            width: 200px;
-            overflow-y: auto;
-            border: 1px solid #aaa;
-        }
-        .scrollable button {
-            width: 100%;
-            margin: 0px 0;
-        }
-    </style>
+<link rel="stylesheet" href={{ url_for('static', filename='css/styles.css') }}>
   </head>
   <body>
     <script type="text/javascript" src={{ url_for('static', filename='js/coms.js') }}> </script>
     <script>
     </script>
     <div id="SongCont" class="container">
-      <div id="NavButtons">
-        <button id="Prev" type="button" onclick="('/command','Prev')"> ← </button>
-        <button id="Next" type="button" onclick="('/command','Next')"> → </button>
+      <div id="NavButtons" class="TopMenu">
+        <button id="Prev" type="button" onclick="('/command','Prev')"> ◀ </button>
+        <button id="Empty" type="button" onclick="('/command','Empty')"> Elrejt </button>
+        <button id="Skip" type="button" onclick="('/command','Skip')"> ▶▶| </button>
+        <button id="Next" type="button" onclick="('/command','Next')"> ▶ </button>
       </div>
-      <input type="text" id="SongFilter">
+      <input type="search" id="SongFilter" placeholder=" " class="search">
       <div class="scrollable" id="SongScroll">
       </div>
     </div>
     <div id="TalkCont" class="container">
-      <div id="NavButtons">
+      <div id="TalkNavButtons" class="TopMenu">
         <button id="Music" type="button" onclick="('/command','Music')">
-          Zene {{x}}
+          Zene 
         </button>
         <button id="Thanks" type="button" onclick="('/command','Thanks')">
           Köszönjük
         </button>
       </div>
-      <input type="text" id="TalkFilter">
+      <input type="search" id="TalkFilter" placeholder=" " class="search">
       <div class="scrollable" id="TalkScroll">
       </div>
     </div>
     <div id="MusicCont" class="container">
       <div id="MusicControll">
-        <button onclick="send('/soundSet','Play')" id="PlayBtn">▶️ </button>
-        <button onclick="send('/soundSet','Pause')" id="PauseBtn">⏸️  </button>
-        <button onclick="send('/soundSet','Stop')" id="StopBtn"> ⏹️  </button>
+        <div class="VHalf">
+        <button onclick="send('/soundSet','Play')" id="PlayBtn">▶ </button>
+        <button onclick="send('/soundSet','Pause')" id="PauseBtn">▐▐ </button>
+        <button onclick="send('/soundSet','Stop')" id="StopBtn"> ■ </button>
+        </div>
+        <div class="VHalf">
+        <label id="autoplayLabel" for="autoplay" > Autoplay::
         <input type="checkbox" id="autoplay" onchange="send('/soundSet','Auto:'+this.checked)" />
-        <label for="autoplay" > 🔁 </label>
+</label>
+        <div id="MusicStatus">  </div>
+        <label id="volumeLabel" for="volume"> 🔊 
+</label>
         <input type="range" id="volume" name="volume" min="0" max="30" onchange="send('/soundSet','Volume:'+this.value)" />
-        <label for="volume"> Hangerő </label>
+        </div>
       </div>
-      <input type="text" id="MusicFilter">
+      <input type="search" id="MusicFilter" placeholder=" " class="search">
       <div class="scrollable" id="MusicScroll">
       </div>
     </div>
     <div id="SettingsCont" class="container">
       <button id="invert" onclick="('/command','Invert')"> Invertálás </button>
-      <div id="marginSetter">
-        
+      <div id="SubModeSelector">
+        <button id="TemplateMode" type="button" onclick="selectSubMode('Template')">Sablon</button>
+        <button id="MarginMode" type="button" onclick="selectSubMode('marginSetter')">Margó</button>
+      </div>
+      <div id="marginSetter" class="SubMode">
+        <button id="marginL+" class="marginV" onclick="send('/margin','LL')"> ↤</button>
+        <button id="marginL-" class="marginV" onclick="send('/margin','LR')"> ⇥</button>
+        <div>
+        <button id="marginU+" class="marginH" onclick="send('/margin','TU')"> ↥ </button>
+        <button id="marginU-" class="marginH" onclick="send('/margin','TD')"> ⤓ </button>
+        <button id="marginReset" class="marginX" onclick="send('/margin','Reset')"> X </button>
+        <button id="marginD+" class="marginH" onclick="send('/margin','BU')"> ⤒ </button>
+        <button id="marginD-" class="marginH" onclick="send('/margin','BD')"> ↧ </button>
+        </div>
+        <button id="marginR+" class="marginV" onclick="send('/margin','RL')"> ⇤</button>
+        <button id="marginR-" class="marginV" onclick="send('/margin','RR')"> ↦</button>
+      </div>
+      <div id="Template" class="SubMode">
+        <input type="search" id="TemplateFilter" placeholder=" " class="search">
+        <div class="scrollable" id="TemplateScroll">
+        </div>
       </div>
 
-      <div class="scrollable"></div>
     </div>
     <div id="ModeSelector">
       <button id="SongMode" type="button" onclick="selectMode('Song')">
@@ -83,7 +99,8 @@
       makeFilter("Song")
       makeFilter("Talk")
       makeFilter("Music")
+      makeFilter("Template")
       selectMode("Song")
     </script>
   </body>
-</html>,000
+</html>

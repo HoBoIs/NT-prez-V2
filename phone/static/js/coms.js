@@ -23,7 +23,7 @@ function loadData(chanel,data,contID){
 
   for (let i=0; i<items.length; i++){
     const btn=document.createElement("button");
-    btn.innerHTML = items[i].text;
+    btn.innerHTML = "<div>"+items[i].text+"</div>";
     btn.data = items[i].searchData
     btn.onclick = () => 
       send(chanel,{"text":items[i].text,"index":i})

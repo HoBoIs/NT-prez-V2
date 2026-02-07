@@ -10,6 +10,7 @@ class options:
     autoPlay:bool=True
     Volume: float=0.8
     sleepLength = 3
+    inversion=False
 
 @dataclass
 class dataContainer:

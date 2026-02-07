@@ -122,6 +122,14 @@ def onSondSet(data):
             emit("volume",state._opts.Volume,broadcast=True)
     
 
+@socketio.on("margin")
+def marginSet(data):
+    with state._lock:
+        data=json.loads(data)
+        if (shouldIgnore(request.remote_addr,data["sent_at"])):
+            return
+        txt=data["text"]
+        #TODO
 @socketio.on("command")
 def command(data):
     with state._lock:
@@ -142,13 +150,12 @@ def command(data):
         elif txt=="Thanks":
             pass
         elif txt=="Invert":
-            pass
+            state._opts.inversion=not state._opts.inversion
         #TODO: notify
 
 @socketio.on("songSet")
 def sendsong(data):
     with state._lock:
-        print(data)
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 

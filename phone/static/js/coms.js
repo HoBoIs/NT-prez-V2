@@ -69,9 +69,9 @@ function filterBtns(input,buttons){
     if (btn.data) {//Not the eyes
       btn.style.display= sanitize(btn.data).includes(sanitize(input.value))?"":"none"
       if (""==btn.style.display)
-        btn.nextSibling.display=btn.nextSibling.dataShow
+        btn.nextSibling.style.display=btn.nextSibling.dataShow
       else
-        btn.nextSibling.display="none"
+        btn.nextSibling.style.display="none"
     }
   })
 }

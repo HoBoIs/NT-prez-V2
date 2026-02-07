@@ -1,5 +1,4 @@
 from dataclasses import dataclass,field
-from typing import TYPE_CHCKING
 
 import server.topState as topState
 
@@ -14,9 +13,19 @@ class State:
     childState: "None | State" =None
     imageInvert=True
     mediaAllerts:list[str]=field(default_factory=lambda:[])
+    kind="State"
 
-    def __init__(self,ts : "topState.TopState"):
-        self.topState=ts
+    def __init__(self,ts : "topState.TopState | State"):
+        self.kind="State"
+        if type(ts) ==topState.TopState:
+            self.topState=ts
+            self.parentState=None
+        elif isinstance(ts,State):
+            self.topState=ts.topState
+            self.parentState=ts
+        self.mediaAllerts=[]
+        self.childState=None
+        self.imageInvert=True
     def notifyParentNxt(self):
         if self.parentState!=None:
             self.parentState.childEndedNxt()
@@ -43,6 +52,10 @@ class State:
             self.childState.getAllerts()
             self.mediaAllerts+=self.childState.mediaAllerts
             self.childState.mediaAllerts=[]
+    def print(self):
+        print(self.kind)
+        if isinstance(self.childState,State) :
+            self.childState.print()
 
 
     

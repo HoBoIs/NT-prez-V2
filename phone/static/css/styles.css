@@ -113,10 +113,6 @@ button:active {
 #volume{
   height: 100%;
 }
-#autoplay{
-  height: 100%;
-  width: 30%;
-}
 #autoplayLabel{
   padding: 3px;
   display: flex;
@@ -142,7 +138,6 @@ button:active {
 #autoplay{
   flex:2;
   transform: scale(3);
-  height: 80%;
 }
 
 #SubModeSelector{

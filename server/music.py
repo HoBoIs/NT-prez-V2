@@ -8,6 +8,7 @@ class MusicListState(State):
     def __init__(self, tw,m:list[str]):
         self.musics=m
         super().__init__(tw)
+        self.kind="MusicListState"
     def nextState(self):
         if self.topState._opts.autoPlay:
             if self.waiting:

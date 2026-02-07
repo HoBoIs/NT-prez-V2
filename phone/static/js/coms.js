@@ -6,7 +6,11 @@ function sanitize(orig){
 }
 
 function send(chanel,msg){
+  if (typeof(msg)=='string'){
+    msg={'text':msg}
+  }
   msg.sent_at=Date.now();
+  console.log(msg)
   fetch(chanel, {
   method: "POST",
     headers: {"Content-Type": "application/json"},
@@ -24,7 +28,7 @@ async function loadData(chanel,data,contID){
     btn.innerHTML = items[i].text;
     btn.data = items[i].searchData
     btn.onclick = () => 
-      send(chanel,{title:items[i].return_value,index:i})
+      send(chanel,{"text":items[i].text,"index":i})
     cont.appendChild(btn);
     if (btn.data!=btn.innerText){
       const subBtn=document.createElement("button");

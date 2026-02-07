@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from flask_socketio import SocketIO, emit
 from flask import Flask, render_template,request, jsonify
 #from typing import TYPE_CHCKING
 app = Flask(__name__)
@@ -15,9 +16,23 @@ templates =[
 #st=server.topState.TopState(data=server.topState.dataContainer([Song(["Cim1"],["V1"],""),Song(["Cim2"],["V1","V2","V3"],"")],[],["m1.mpx","m2.mpx"]))
 #songs=[transformSong(s) for s in st.data.songs]
 from server.talk import Talk
-from server.song import Song
+from server.song import Song, SongListState
 import server.topState
+import time
 
+lastUsedBy='INVALIDIP'
+lastUsedTime=0
+def shouldIgnore(ip,gottime):
+    global lastUsedBy
+    global lastUsedTime
+    if ip!=lastUsedBy and time.time()-lastUsedTime < 2:
+        return True
+    if (gottime-time.time()*1000)>5000:
+        return True
+    lastUsedBy=ip
+    lastUsedTime=time.time()
+    return False
+volume=0
 @dataclass
 class ComState:
     songs:list[dict[str,str]]
@@ -59,7 +74,7 @@ def index():
         print("Clicked:", clicked)
 
     #return render_template("index.html", songs=songs,talks=talks)
-    return render_template("index.html")
+    return render_template("index.html",volume=volume)
 @app.route("/SongList")
 def get_items():
     return jsonify(lstate.songs )
@@ -80,14 +95,64 @@ def sendtalk():
 
 @app.route("/soundSet", methods=["POST"])
 def onSondSet():
-    data = request.json
-    print('got:',data)
+    with state._lock:
+        data = request.json
+        if (shouldIgnore(request.remote_addr,data["sent_at"])):
+            return {"ok": True}
+        print('got:',data)
+        txt : str=data["text"]
+        if txt=="Play":
+            pass
+        elif txt=="Pause":
+            pass
+        elif txt=="Stop":
+            pass
+        elif txt.startswith("Auto:"):
+            pass
+        elif txt.startswith("Volume:"):
+            global volume
+            volume=int(txt[7:])
+            print(volume)
     return {"ok": True}
     
+
+@app.route("/command", methods=["POST"])
+def command():
+    with state._lock:
+        data = request.json
+        if (shouldIgnore(request.remote_addr,data["sent_at"])):
+            return {"ok": True}
+        txt=data["text"]
+        if txt=="Next":
+            state._state.nextState()
+        elif txt=="Prev":
+            state._state.prevState()
+        elif txt=="Skip":
+            pass
+        elif txt=="Empty":
+            pass
+        elif txt=="Music":
+            pass
+        elif txt=="Thanks":
+            pass
+        elif txt=="Invert":
+            pass
+        #TODO: notify
+        return {"ok": True}
+
 @app.route("/sendSong", methods=["POST"])
 def sendsong():
-    data = request.json
-    print("Clicked:", data)
+    with state._lock:
+        data = request.json
+        if (shouldIgnore(request.remote_addr,data["sent_at"])):
+            return {"ok": True}
+        pres_idx=data['index']
+        pres_txt=data['text']
+        if lstate.songs[pres_idx]['text']!=pres_txt:
+            #TODO allert old data
+            return {"ok": True}
+        state._state=SongListState(state,state.data.songs,pres_idx)
+        #print(state._state.childState)
     return {"ok": True}
 
 def start():

@@ -16,6 +16,7 @@ class TalkState(State):
         self.talk=t
         self.p=self.part.during
         super().__init__(ts)
+        self.kind="TalkState"
     """def showTalk(self):
         self.p=self.part.during
         self.mainWindow.displayTalk(self.talk.title,self.talk.name)"""

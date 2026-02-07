@@ -17,6 +17,7 @@ class SongState(state.State):
         self.actual=song
         self.verseIdx=verseIdx
         super().__init__(tw)
+        self.kind="SongState"
     def nextState(self):
         if (self.verseIdx+1 < len(self.actual.verses)):
             self.verseIdx+=1
@@ -27,27 +28,37 @@ class SongState(state.State):
             self.verseIdx-=1
         elif self:
             self.notifyParentPrev()
-import random
+    def print(self):
+        print(self.verseIdx,self.actual.verses[self.verseIdx])
+        return super().print()
+
 from server.config import config
 
 class SongListState(state.State):
-    songs:list[Song]=[]
+    songs:list[Song]
     SongIdx:int=0
     atEnd=False
-    logos=["",""]
-    #def __init__(self):
-        #self.songs=readSongs(config.songDir)
+    def __init__(self,ts,songs,idx=0):
+        super().__init__(ts)
+        self.songs=songs
+        self.SongIdx=idx
+        self.childState=SongState(self,song=self.songs[idx])
+        self.atEnd=False
+        self.kind="SongListState"
     def nextState(self):
         if (self.childState):
             self.childState.nextState()
         else: 
-            self.childState=SongState(self.topState,song=self.songs[self.SongIdx])
+            self.childState=SongState(self,song=self.songs[self.SongIdx])
     def prevState(self):
         if (self.childState):
             self.childState.prevState()
         else:
+            self.SongIdx-=1
+            if self.SongIdx==-1:
+                self.SongIdx=len(self.songs)-1
             s=self.songs[self.SongIdx]
-            self.childState=SongState(self.topState,song=s,verseIdx=len(s.verses))
+            self.childState=SongState(self,song=s,verseIdx=len(s.verses)-1)
     def childEndedNxt(self):
         self.SongIdx+=1
         self.childState=None
@@ -56,11 +67,12 @@ class SongListState(state.State):
             self.SongIdx=0
 
     def childEndedPrev(self):
-        self.SongIdx-=1
         self.childState=None
         self.atEnd=False
-        if self.SongIdx==-1:
-            self.SongIdx=len(self.songs)-1
+    def print(self):
+        print(self.SongIdx,self.songs[self.SongIdx].titles)
+        return super().print()
+
     """def render(self):
         if (self.childState):
             self.childState.render()

@@ -4,9 +4,8 @@
 <link rel="stylesheet" href={{ url_for('static', filename='css/styles.css') }}>
   </head>
   <body>
+    <script src="/static/js/socket.io.min.js"></script>
     <script type="text/javascript" src={{ url_for('static', filename='js/coms.js') }}> </script>
-    <script>
-    </script>
     <div id="SongCont" class="container">
       <div id="NavButtons" class="TopMenu">
         <button id="Prev" type="button" onclick="send('/command','Prev')"> ◀ </button>
@@ -93,9 +92,6 @@
       </button>
     </div>
     <script>
-      loadSongs();
-      loadTalks();
-      loadMusic();
       makeFilter("Song")
       makeFilter("Talk")
       makeFilter("Music")

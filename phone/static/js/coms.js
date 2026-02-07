@@ -11,15 +11,13 @@ function send(chanel,msg){
   }
   msg.sent_at=Date.now();
   console.log(msg)
-  fetch(chanel, {
-  method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(msg)
-  });
+  emit(chanel, JSON.stringify(msg));
 }
-async function loadData(chanel,data,contID){
-  const itemsC= await fetch(data)
-  const items = await itemsC.json();
+
+const socket = io();
+//async function loadData(chanel,data,contID){
+function loadData(chanel,data,contID){
+  const items = data
   const cont=document.getElementById(contID)
   cont.innerHTML=""
 
@@ -43,36 +41,20 @@ async function loadData(chanel,data,contID){
       cont.appendChild(dv)
     }
   }
+}
+socket.on("songs",songs =>{
+  loadData("songSet", songs, "SongScroll")
+})
 
-}
-
-async function loadSongs(){
-  return loadData("/sendSong","SongList", "SongScroll")
-}
-async function loadTalks(){
-  return loadData("/sendTalk","TalkList", "TalkScroll")
-}
-async function loadMusic(){
-  return loadData("/sendMusic","MusicList", "MusicScroll")
-}
-async function loadTemplate(){
+socket.on("talks",data =>{
+  loadData("talkSet", data, "TalkScroll")
+})
+socket.on("music",data =>{
+  loadData("musicSet", data, "MusicScroll")
+})
+socket.on("template",data =>{
   //TODO
-  /*const itemsC= await fetch(data)
-  const items = await itemsC.json();
-  const cont=document.getElementById("TemplateScroll")
-  cont.innerHTML=""
-
-  for (let i=0; i<items.length; i++){
-    const dv=document.createElement("div");
-    const btn=document.createElement("button");
-    btn.innerHTML = items[i].text;
-    btn.data = items[i].searchData
-    btn.onclick = () => 
-      send("/sendTemplate",{title:items[i].text,index:i})
-    cont.appendChild(dv);
-    dv.appendChild(btn);
-  }*/
-}
+})
 function filterBtns(input,buttons){
   buttons.forEach(btn=>{
     if (btn.data) //Not the eyes

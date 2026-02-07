@@ -93,13 +93,13 @@ def on_connect():
     sendTemplates()
     sendMusics()
     emit("volume",state._opts.Volume)
+    emit("Auto",state._opts.autoPlay)
 
 
 @socketio.on("soundSet")
 def onSondSet(data):
     with state._lock:
         data=json.loads(data)
-        print(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
         print('got:',data)
@@ -148,6 +148,7 @@ def command(data):
 @socketio.on("songSet")
 def sendsong(data):
     with state._lock:
+        print(data)
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 

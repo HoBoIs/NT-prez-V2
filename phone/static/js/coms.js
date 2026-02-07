@@ -32,9 +32,12 @@ function loadData(chanel,data,contID){
       const subBtn=document.createElement("button");
       const dv=document.createElement("div");
       dv.innerText=btn.data
+      dv.dataShow="none"
       subBtn.innerText="👁"
-      subBtn.onclick=()=>{
-        dv.style.display=dv.style.display=="none"?"":"none"
+      subBtn.onclick=(event)=>{
+        event.stopPropagation()
+        dv.dataShow=dv.dataShow=="none"?"":"none"
+        dv.style.display=dv.dataShow
       }
       dv.style.display="none"
       btn.appendChild(subBtn)
@@ -63,8 +66,13 @@ socket.on("template",data =>{
 })
 function filterBtns(input,buttons){
   buttons.forEach(btn=>{
-    if (btn.data) //Not the eyes
+    if (btn.data) {//Not the eyes
       btn.style.display= sanitize(btn.data).includes(sanitize(input.value))?"":"none"
+      if (""==btn.style.display)
+        btn.nextSibling.display=btn.nextSibling.dataShow
+      else
+        btn.nextSibling.display="none"
+    }
   })
 }
 function makeFilter(id){

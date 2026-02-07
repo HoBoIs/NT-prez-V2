@@ -8,10 +8,10 @@
     <script type="text/javascript" src={{ url_for('static', filename='js/coms.js') }}> </script>
     <div id="SongCont" class="container">
       <div id="NavButtons" class="TopMenu">
-        <button id="Prev" type="button" onclick="send('/command','Prev')"> ◀ </button>
-        <button id="Empty" type="button" onclick="send('/command','Empty')"> Elrejt </button>
-        <button id="Skip" type="button" onclick="send('/command','Skip')"> ▶▶| </button>
-        <button id="Next" type="button" onclick="send('/command','Next')"> ▶ </button>
+        <button id="Prev" type="button" onclick="send('command','Prev')"> ◀ </button>
+        <button id="Empty" type="button" onclick="send('command','Empty')"> Elrejt </button>
+        <button id="Skip" type="button" onclick="send('command','Skip')"> ▶▶| </button>
+        <button id="Next" type="button" onclick="send('command','Next')"> ▶ </button>
       </div>
       <input type="search" id="SongFilter" placeholder=" " class="search">
       <div class="scrollable" id="SongScroll">
@@ -19,10 +19,10 @@
     </div>
     <div id="TalkCont" class="container">
       <div id="TalkNavButtons" class="TopMenu">
-        <button id="Music" type="button" onclick="send('/command','Music')">
+        <button id="Music" type="button" onclick="send('command','Music')">
           Zene 
         </button>
-        <button id="Thanks" type="button" onclick="send('/command','Thanks')">
+        <button id="Thanks" type="button" onclick="send('command','Thanks')">
           Köszönjük
         </button>
       </div>
@@ -33,18 +33,18 @@
     <div id="MusicCont" class="container">
       <div id="MusicControll">
         <div class="VHalf">
-        <button onclick="send('/soundSet','Play')" id="PlayBtn">▶ </button>
-        <button onclick="send('/soundSet','Pause')" id="PauseBtn">▐▐ </button>
-        <button onclick="send('/soundSet','Stop')" id="StopBtn"> ■ </button>
+        <button onclick="send('soundSet','Play')" id="PlayBtn">▶ </button>
+        <button onclick="send('soundSet','Pause')" id="PauseBtn">▐▐ </button>
+        <button onclick="send('soundSet','Stop')" id="StopBtn"> ■ </button>
         </div>
         <div class="VHalf">
         <label id="autoplayLabel" for="autoplay" > Autoplay::
-        <input type="checkbox" id="autoplay" onchange="send('/soundSet','Auto:'+this.checked)" />
+        <input type="checkbox" id="autoplay" onchange="send('soundSet','Auto:'+this.checked)" />
 </label>
         <div id="MusicStatus">  </div>
         <label id="volumeLabel" for="volume" > 🔊
 </label>
-        <input type="range" id="volume" name="volume" min="0" max="30" onchange="send('/soundSet','Volume:'+this.value)" />
+        <input type="range" id="volume" name="volume" min="0" max="30" onchange="send('soundSet','Volume:'+this.value)" />
         </div>
       </div>
       <input type="search" id="MusicFilter" placeholder=" " class="search">
@@ -52,23 +52,23 @@
       </div>
     </div>
     <div id="SettingsCont" class="container">
-      <button id="invert" onclick="send('/command','Invert')"> Invertálás </button>
+      <button id="invert" onclick="send('command','Invert')"> Invertálás </button>
       <div id="SubModeSelector">
         <button id="TemplateMode" type="button" onclick="selectSubMode('Template')">Sablon</button>
         <button id="MarginMode" type="button" onclick="selectSubMode('marginSetter')">Margó</button>
       </div>
       <div id="marginSetter" class="SubMode">
-        <button id="marginL+" class="marginV" onclick="send('/margin','LL')"> ↤</button>
-        <button id="marginL-" class="marginV" onclick="send('/margin','LR')"> ⇥</button>
+        <button id="marginL+" class="marginV" onclick="send('margin','LL')"> ↤</button>
+        <button id="marginL-" class="marginV" onclick="send('margin','LR')"> ⇥</button>
         <div>
-        <button id="marginU+" class="marginH" onclick="send('/margin','TU')"> ↥ </button>
-        <button id="marginU-" class="marginH" onclick="send('/margin','TD')"> ⤓ </button>
-        <button id="marginReset" class="marginX" onclick="send('/margin','Reset')"> X </button>
-        <button id="marginD+" class="marginH" onclick="send('/margin','BU')"> ⤒ </button>
-        <button id="marginD-" class="marginH" onclick="send('/margin','BD')"> ↧ </button>
+        <button id="marginU+" class="marginH" onclick="send('margin','TU')"> ↥ </button>
+        <button id="marginU-" class="marginH" onclick="send('margin','TD')"> ⤓ </button>
+        <button id="marginReset" class="marginX" onclick="send('margin','Reset')"> X </button>
+        <button id="marginD+" class="marginH" onclick="send('margin','BU')"> ⤒ </button>
+        <button id="marginD-" class="marginH" onclick="send('margin','BD')"> ↧ </button>
         </div>
-        <button id="marginR+" class="marginV" onclick="send('/margin','RL')"> ⇤</button>
-        <button id="marginR-" class="marginV" onclick="send('/margin','RR')"> ↦</button>
+        <button id="marginR+" class="marginV" onclick="send('margin','RL')"> ⇤</button>
+        <button id="marginR-" class="marginV" onclick="send('margin','RR')"> ↦</button>
       </div>
       <div id="Template" class="SubMode">
         <input type="search" id="TemplateFilter" placeholder=" " class="search">

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 #from flask import Flask, render_template,request, jsonify
 from flask import Flask,request,render_template
 from flask_socketio import SocketIO, emit
+import json
 #from typing import TYPE_CHCKING
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*") #disable monitoring?
@@ -74,7 +75,7 @@ def index():
         clicked = request.form["item"]
         print("Clicked:", clicked)
     #return render_template("index.html", songs=songs,talks=talks)
-    return render_template("index.html",volume=volume)
+    return render_template("index.html")
 
 def sendSongs():
     emit("songs",lstate.songs)
@@ -91,11 +92,14 @@ def on_connect():
     sendTalks()
     sendTemplates()
     sendMusics()
+    emit("volume",state._opts.Volume)
 
 
 @socketio.on("soundSet")
 def onSondSet(data):
     with state._lock:
+        data=json.loads(data)
+        print(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
         print('got:',data)
@@ -107,16 +111,21 @@ def onSondSet(data):
         elif txt=="Stop":
             pass
         elif txt.startswith("Auto:"):
-            pass
+            print(txt)
+            if txt=="Auto:true":
+                state._opts.autoPlay=True
+            else:
+                state._opts.autoPlay=False
+            emit("Auto",state._opts.autoPlay,broadcast=True)
         elif txt.startswith("Volume:"):
-            global volume
-            volume=int(txt[7:])
-            print(volume)
+            state._opts.Volume=int(txt[7:])
+            emit("volume",state._opts.Volume,broadcast=True)
     
 
 @socketio.on("command")
 def command(data):
     with state._lock:
+        data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return
         txt=data["text"]
@@ -139,13 +148,13 @@ def command(data):
 @socketio.on("songSet")
 def sendsong(data):
     with state._lock:
+        data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
         pres_idx=data['index']
         pres_txt=data['text']
         if lstate.songs[pres_idx]['text']!=pres_txt:
-            #TODO allert old data
-            return 
+            sendSongs()
         state._state=SongListState(state,state.data.songs,pres_idx)
         #print(state._state.childState)
 

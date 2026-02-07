@@ -11,7 +11,7 @@ function send(chanel,msg){
   }
   msg.sent_at=Date.now();
   console.log(msg)
-  emit(chanel, JSON.stringify(msg));
+  socket.emit(chanel, JSON.stringify(msg));
 }
 
 const socket = io();
@@ -42,6 +42,12 @@ function loadData(chanel,data,contID){
     }
   }
 }
+socket.on("volume",v =>{
+  document.getElementById("volume").value=v
+})
+socket.on("Auto",v =>{
+  document.getElementById("autoplay").checked =v
+})
 socket.on("songs",songs =>{
   loadData("songSet", songs, "SongScroll")
 })

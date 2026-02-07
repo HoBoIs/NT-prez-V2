@@ -1,4 +1,4 @@
-from song import Song
+from server.song import Song
 import os
 import json
 
@@ -10,7 +10,7 @@ def readSong(path:str)->Song:
             c=data["comment"]
         if "lent_verses" in data:
             pass #TODO
-        return Song(data['titles'],data['verses'],c)
+        return Song(data['titles'],data['sections'],c)
 
 def readSongs(path:str)->list[Song]:
     res :list[Song]=[]
@@ -32,9 +32,10 @@ def readSongs(path:str)->list[Song]:
             try:
                 tmp=readSong(file)
                 tmp.titles=list( filter(lambda x: not x in was ,tmp.titles))
-                if len(tmp.titles)==0:
+                if len(tmp.titles)!=0:
                     res+=[tmp]
             except Exception as e:
                 print(e)
                 print(file)
+    res.sort(key=lambda x: x.titles[0])
     return res

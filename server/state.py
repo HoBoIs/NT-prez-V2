@@ -1,22 +1,22 @@
-from dataclasses import dataclass
-#from mainWindow import MainWindow
+from dataclasses import dataclass,field
+from typing import TYPE_CHCKING
+
+import server.topState as topState
+
 @dataclass
 class State:
     def nextState(self):
         pass
     def prevState(self):
         pass
-    mainWindow : "MainWindow"
-    audioFile : None | str=None
-    videoFile : None | str=None
-    imageFile: None | str = None
+    topState : "topState.TopState" 
     parentState: "None | State" =None
     childState: "None | State" =None
     imageInvert=True
-    def __init__(self,mw):
-        self.mainWindow=mw
-    def render(self):
-        pass
+    mediaAllerts:list[str]=field(default_factory=lambda:[])
+
+    def __init__(self,ts : "topState.TopState"):
+        self.topState=ts
     def notifyParentNxt(self):
         if self.parentState!=None:
             self.parentState.childEndedNxt()
@@ -27,6 +27,22 @@ class State:
         pass
     def childEndedPrev(self):
         pass
+    #For the phone frontend
+    def nxtPrevirw(self):
+        return "N/A"
+    def prevPreview(self):
+        return "N/A"
+    def getPlayState(self):
+        return (0,0)
+    def getForHighlite(self):
+        return "N/A"
+    def getType(self):
+        return "N/A"
+    def getAllerts(self):
+        if self.childState:
+            self.childState.getAllerts()
+            self.mediaAllerts+=self.childState.mediaAllerts
+            self.childState.mediaAllerts=[]
 
 
     

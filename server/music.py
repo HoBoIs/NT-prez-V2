@@ -4,29 +4,28 @@ from state import State
 class MusicListState(State):
     musics:list[str]
     idx=0
-    autoplay=True
-    sleepLength=12
     waiting=True
-    def __init__(self, mainWindow,m:list[str]):
+    def __init__(self, tw,m:list[str]):
         self.musics=m
-        super().__init__(mainWindow)
+        super().__init__(tw)
     def nextState(self):
-        if self.autoplay:
+        if self.topState._opts.autoPlay:
             if self.waiting:
+                self.waiting=False
                 self.idx+=1
                 if self.idx==len(self.musics):
                     self.idx=0
-                self.mainWindow.playMusic(self.musics[self.idx],self.nextState())
+                self.play()
             else:
-                self.mainWindow.delayed(self.sleepLength,self.nextState())
+                self.waiting=True
+                self.mediaAllerts.append("SLEEP")
         return super().nextState()
     def prevState(self):
         return super().prevState()
     def pause(self): 
-        self.mainWindow.pause()
-    def play(self,a): 
-        pass
+        self.mediaAllerts+=["PAUSE"]
+    def play(self):
+        self.topState.audioFile=self.musics[self.idx]
+        self.mediaAllerts+=["PLAY"]
     def stop(self): 
-        pass
-    def render(self):
-        return super().render()
+        self.mediaAllerts+=["STOP"]

@@ -1,0 +1,191 @@
+* {
+  background-color: black;
+  color: white;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+
+  margin: 0px;
+  padding: 0px;
+
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.scrollable {
+    height: 70%;
+    width: 100%;
+    overflow-y: auto;
+    border: 1px solid #aaa;
+}
+.scrollable button {
+    width: 100%;
+    height: 10%;
+    font-size: clamp(10px,5vw,5vh);
+    margin: 0px 0;
+}
+.container{
+  width: 100%;
+  height: 90%;
+}
+.TopMenu {
+  width: 100%;
+  height: 20%;
+
+  display: flex;
+}
+.TopMenu button{
+flex: 1;
+  font-size: 50px;
+  text-align: middle;
+}
+.search {
+  width: 100%;
+  height: 10%;
+
+  
+    padding-left: 2rem;
+    background-repeat: no-repeat;
+    background-position: 0.6rem center;
+    background-size: clamp(10px,6vw,6vh);
+  font-size: clamp(10px,6vw,6vh);
+
+  text-align: center;
+}
+.search:placeholder-shown:not(:focus) {
+  background-image: url("/static/images/search.svg");
+}
+
+.search:focus,
+.search:not(:placeholder-shown) {
+  background-image: none;
+}
+button:active {
+  background-color: gray;
+}
+.scrollable div{
+  font-size: clamp(10px,3vw,3vh);
+}
+.scrollable button button{
+  width: auto;
+  height: 100%;
+  font-size: 1em;
+  float:right;
+}
+#ModeSelector{
+  display: flex;
+  width: 100%;
+  height: 10%;
+}
+#ModeSelector button{
+  flex: 2;
+  font-size: 50px;
+  text-align: middle;
+  overflow:hidden;
+}
+#ModeSelector #SettingsMode{
+  flex: 1;
+  font-size: 50px;
+  text-align: middle;
+  overflow:hidden;
+}
+#MusicControll {
+  height: 20%;
+  width: 100%;
+}
+.VHalf{
+  height: 50%;
+  width: 100%;
+  display:flex;
+}
+.VHalf button{
+  height: 100%;
+  flex: 1;
+  font-size: clamp(10px,4vw,40px);
+}
+.VHalf div{
+  height: 100%;
+  flex: 4;
+  font-size: clamp(10px,4vw,40px);
+}
+#volume{
+  height: 100%;
+}
+#autoplay{
+  height: 100%;
+  width: 30%;
+}
+#autoplayLabel{
+  padding: 3px;
+  display: flex;
+  font-size: clamp(10px,5vw,5vh);
+  text-align: center;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+#volumeLabel{
+  font-size: clamp(10px,6vw,6vh);
+  display: flex;
+  text-align: center;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+#volume{
+  flex:3;
+}
+#autoplay{
+  flex:2;
+  transform: scale(3);
+  height: 80%;
+}
+
+#SubModeSelector{
+  display: flex;
+  width: 100%;
+  height: 10%;
+}
+#SubModeSelector button{
+  flex: 2;
+  font-size: 50px;
+  text-align: middle;
+  overflow:hidden;
+}
+
+#marginSetter{
+  display: flex;
+  width: 100%;
+  height: 80%;
+}
+#marginSetter button{
+  flex: 1;
+  height: 100%;
+  font-size: 50px;
+  text-align: middle;
+  overflow:hidden;
+  font-size: clamp(10px,10vw,10vh);
+}
+#marginSetter div{
+  height: 100%;
+  flex: 5;
+  display: flex;
+  flex-direction:column;
+}
+#marginSetter div button{
+  width: 100%;
+  flex: 1;
+  font-size: 50px;
+  text-align: middle;
+  overflow:hidden;
+  font-size: clamp(10px,10vw,10vh);
+}
+#invert {
+  width:100%;
+  height: 10%;
+  font-size: clamp(10px,6vw,6vh);
+}

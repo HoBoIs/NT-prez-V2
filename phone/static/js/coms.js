@@ -26,6 +26,18 @@ async function loadData(chanel,data,contID){
     btn.onclick = () => 
       send(chanel,{title:items[i].return_value,index:i})
     cont.appendChild(btn);
+    if (btn.data!=btn.innerText){
+      const subBtn=document.createElement("button");
+      const dv=document.createElement("div");
+      dv.innerText=btn.data
+      subBtn.innerText="👁"
+      subBtn.onclick=()=>{
+        dv.style.display=dv.style.display=="none"?"":"none"
+      }
+      dv.style.display="none"
+      btn.appendChild(subBtn)
+      cont.appendChild(dv)
+    }
   }
 
 }
@@ -59,8 +71,8 @@ async function loadTemplate(){
 }
 function filterBtns(input,buttons){
   buttons.forEach(btn=>{
-
-    btn.style.display= sanitize(btn.data).includes(sanitize(input.value))?"":"none"
+    if (btn.data) //Not the eyes
+      btn.style.display= sanitize(btn.data).includes(sanitize(input.value))?"":"none"
   })
 }
 function makeFilter(id){

@@ -1,8 +1,8 @@
 from dataclasses import dataclass,field
 from enum import Enum
-from server.state import State
-from server.talk import Talk
-#from server.song import Song
+from state.state import State
+from state.talk import Talk
+#from state.song import Song
 @dataclass
 class TalkState(State):
     talk:Talk=Talk("","","",True,"",[])

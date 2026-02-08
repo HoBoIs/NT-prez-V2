@@ -1,8 +1,8 @@
-from server.songReader import readSongs
-from server.topState import TopState, dataContainer
-import server.talk as talk
-songs=readSongs("./server/res/songs/")
-talks=talk.readTalks("./server/res/talks.json")
+from state.songReader import readSongs
+from state.topState import TopState, dataContainer
+import state.talk as talk
+songs=readSongs("./state/res/songs/")
+talks=talk.readTalks("./state/res/talks.json")
 ds=dataContainer(songs=songs,talks=talks,musics=[],templstes=[])
 ts=TopState(ds)
 

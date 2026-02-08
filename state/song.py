@@ -7,8 +7,8 @@ class Song:
     verses:list[str]
     comment: str
 
-#from server.songReader import readSongs
-import server.state as state
+#from state.songReader import readSongs
+import state.state as state
 
 class SongState(state.State):
     actual :Song =Song([],[],"")
@@ -32,7 +32,7 @@ class SongState(state.State):
         print(self.verseIdx,self.actual.verses[self.verseIdx])
         return super().print()
 
-from server.config import config
+from state.config import config
 
 class SongListState(state.State):
     songs:list[Song]

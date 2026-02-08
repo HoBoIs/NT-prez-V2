@@ -1,27 +1,13 @@
 from dataclasses import dataclass
 from re import T
-#from flask import Flask, render_template,request, jsonify
 from flask import Flask,request,render_template
 from flask_socketio import SocketIO, emit
 import json
-#from typing import TYPE_CHCKING
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*") #disable monitoring?
-"""
-songs = [{"text":"S"+str(i),"searchData":"S"+str(i)+"fr"+str(i)} for i in range(30)]
-talks = [{"text":"T"+str(i),"searchData":"T"+str(i)+"fr"+str(i)} for i in range(30)]
-musics = [{"text":"M"+str(i),"searchData":"S"+str(i)+"fr"+str(i)} for i in range(30)]
-templates =[
-        {"text:":"T0","searchData":"T0","fields":2},
-        {"text:":"T1","searchData":"T1","fields":1},
-        {"text:":"T2","searchData":"T2","fields":1}
-        ]
-"""
-#st=server.topState.TopState(data=server.topState.dataContainer([Song(["Cim1"],["V1"],""),Song(["Cim2"],["V1","V2","V3"],"")],[],["m1.mpx","m2.mpx"]))
-#songs=[transformSong(s) for s in st.data.songs]
-from server.talk import Talk
-from server.song import Song, SongListState, SongState
-import server.topState
+from state.talk import Talk
+from state.song import Song, SongListState, SongState
+import state.topState as topState
 import time
 
 lastUsedBy='INVALIDIP'
@@ -43,13 +29,13 @@ class ComState:
     talks:list[dict[str,str]]
     music:list[dict[str,str]]
     templates:list[dict[str,str]]
-    def refreshFromState(self,st:server.topState.TopState):
+    def refreshFromState(self,st:topState.TopState):
         self.songs=[transformSong(s) for s in st.data.songs]
         self.talks=[transformTalk(s) for s in st.data.talks]
         self.musics=[transformMusic(s) for s in st.data.musics]
-state : server.topState.TopState
+state : topState.TopState
 lstate: ComState
-def init(ts :server.topState.TopState):
+def init(ts :topState.TopState):
     global state
     state=ts
     global lstate

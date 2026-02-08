@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from threading import Lock
-from server.song import Song
-from server.talk import Talk
-import server.state as state
-import server.mediainfo as mediainfo
+from state.song import Song
+from state.talk import Talk
+import state.state as state
+import state.mediainfo as mediainfo
 
 @dataclass
 class options:

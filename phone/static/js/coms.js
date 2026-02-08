@@ -26,14 +26,11 @@ function loadData(chanel,data,contID){
     btn.data = items[i]
     //This is for songs
     //TODO split the function for songs/talks/...
-    if (chanel=="songSet")
-      btn.searchData=sanitize(btn.data.titles.join(""))+"¤"+sanitize(btn.data.verses.join(""))
-    else
-      btn.searchData=items[i].text
+    btn.searchData=items[i].text
     btn.onclick = () => 
       send(chanel,{"text":items[i].text,"index":i})
     cont.appendChild(btn);
-    if (btn.data!=btn.innerText && chanel=="songSet"){
+    /*if (btn.data!=btn.innerText && chanel=="songSet"){
       const subBtn=document.createElement("button");
       const dv=document.createElement("div");
       dv.innerText=btn.data.titles.join('\n')+"\n---\n"+btn.data.verses.join('\n')
@@ -47,7 +44,7 @@ function loadData(chanel,data,contID){
       dv.style.display="none"
       btn.appendChild(subBtn)
       cont.appendChild(dv)
-    }
+    }*/
   }
 }
 socket.on("songSelected", (data) =>{
@@ -85,7 +82,37 @@ socket.on("Auto",v =>{
   document.getElementById("autoplay").checked =v
 })
 socket.on("songs",songs =>{
-  loadData("songSet", songs, "SongScroll")
+  //loadData("songSet", songs, "SongScroll")
+  const items = songs
+  const cont=document.getElementById("SongScroll")
+  cont.innerHTML=""
+
+  for (let i=0; i<items.length; i++){
+    const btn=document.createElement("button");
+    btn.innerHTML = "<div>"+items[i].text+"</div>";
+    btn.data = items[i]
+    //This is for songs
+    //TODO split the function for songs/talks/...
+    btn.searchData=sanitize(btn.songs.titles.join(""))+"¤"+sanitize(btn.songs.verses.join(""))
+    btn.onclick = () => 
+      send("songSet",{"text":items[i].text,"index":i})
+    cont.appendChild(btn);
+    if (btn.songs!=btn.innerText){
+      const subBtn=document.createElement("button");
+      const dv=document.createElement("div");
+      dv.innerText=btn.songs.titles.join('\n')+"\n---\n"+btn.songs.verses.join('\n')
+      dv.dataShow="none"
+      subBtn.innerText="👁"
+      subBtn.onclick=(event)=>{
+        event.stopPropagation()
+        dv.dataShow=dv.dataShow=="none"?"":"none"
+        dv.style.display=dv.dataShow
+      }
+      dv.style.display="none"
+      btn.appendChild(subBtn)
+      cont.appendChild(dv)
+    }
+  }
 })
 
 socket.on("talks",data =>{

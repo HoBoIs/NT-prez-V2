@@ -8,10 +8,10 @@
     <script type="text/javascript" src={{ url_for('static', filename='js/coms.js') }}> </script>
     <div id="SongCont" class="container">
       <div id="NavButtons" class="TopMenu">
-        <button id="Prev" type="button" onclick="send('command','Prev')"> ◀ </button>
+        <button id="Prev" type="button" onclick="send('command','Prev')"> ◀ <div id="PrevNote" class="note"></div> </button>
         <button id="Empty" type="button" onclick="send('command','Empty')"> Elrejt </button>
         <button id="Skip" type="button" onclick="send('command','Skip')"> ▶▶| </button>
-        <button id="Next" type="button" onclick="send('command','Next')"> ▶ </button>
+        <button id="Next" type="button" onclick="send('command','Next')"> ▶ <div id="NextNote" class="note"> </button>
       </div>
       <input type="search" id="SongFilter" placeholder=" " class="search">
       <div class="scrollable" id="SongScroll">

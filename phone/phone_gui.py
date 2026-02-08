@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from re import T
 #from flask import Flask, render_template,request, jsonify
 from flask import Flask,request,render_template
 from flask_socketio import SocketIO, emit
@@ -19,7 +20,7 @@ templates =[
 #st=server.topState.TopState(data=server.topState.dataContainer([Song(["Cim1"],["V1"],""),Song(["Cim2"],["V1","V2","V3"],"")],[],["m1.mpx","m2.mpx"]))
 #songs=[transformSong(s) for s in st.data.songs]
 from server.talk import Talk
-from server.song import Song, SongListState
+from server.song import Song, SongListState, SongState
 import server.topState
 import time
 
@@ -38,7 +39,7 @@ def shouldIgnore(ip,gottime):
 volume=0
 @dataclass
 class ComState:
-    songs:list[dict[str,str]]
+    songs:list[dict[str,str|list[str]]]
     talks:list[dict[str,str]]
     music:list[dict[str,str]]
     templates:list[dict[str,str]]
@@ -61,9 +62,11 @@ def transformTalk(t:Talk):
     return res
 
 def transformSong(s:Song):
-    res:dict[str,str] ={}
+    res:dict[str,str|list[str]] ={}
     res["text"]=s.titles[0]
-    res["searchData"]="\n".join(s.titles)+"\n---\n"+"\n\n".join(s.verses)
+    res["titles"]=s.titles
+    res["verses"]=s.verses
+    #res["searchData"]="\n".join(s.titles)+"\n---\n"+"\n\n".join(s.verses)
     return res
 def transformMusic(m:str):
     return {"text":m,"searchData":m}
@@ -130,6 +133,15 @@ def marginSet(data):
             return
         txt=data["text"]
         #TODO
+def sendSongState():
+  if (isinstance(state._state,SongListState)):
+      si=state._state.SongIdx
+      if type(state._state.childState)==SongState:
+          vi=state._state.childState.verseIdx
+          emit("songSelected",{"songidx":si,"vidx":vi},broadcast=True)
+      else:
+          emit("songSelected",{"songidx":si,"vidx":-1},broadcast=True)
+
 @socketio.on("command")
 def command(data):
     with state._lock:
@@ -139,8 +151,10 @@ def command(data):
         txt=data["text"]
         if txt=="Next":
             state._state.nextState()
+            sendSongState()
         elif txt=="Prev":
             state._state.prevState()
+            sendSongState()
         elif txt=="Skip":
             pass
         elif txt=="Empty":
@@ -164,6 +178,7 @@ def sendsong(data):
         if lstate.songs[pres_idx]['text']!=pres_txt:
             sendSongs()
         state._state=SongListState(state,state.data.songs,pres_idx)
+        emit("songSelected",{"songidx":data['index'],"vidx":0},broadcast=True)
         #print(state._state.childState)
 
 def start():

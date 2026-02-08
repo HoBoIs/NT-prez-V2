@@ -10,7 +10,6 @@ function send(chanel,msg){
     msg={'text':msg}
   }
   msg.sent_at=Date.now();
-  console.log(msg)
   socket.emit(chanel, JSON.stringify(msg));
 }
 
@@ -24,14 +23,20 @@ function loadData(chanel,data,contID){
   for (let i=0; i<items.length; i++){
     const btn=document.createElement("button");
     btn.innerHTML = "<div>"+items[i].text+"</div>";
-    btn.data = items[i].searchData
+    btn.data = items[i]
+    //This is for songs
+    //TODO split the function for songs/talks/...
+    if (chanel=="songSet")
+      btn.searchData=sanitize(btn.data.titles.join(""))+"¤"+sanitize(btn.data.verses.join(""))
+    else
+      btn.searchData=items[i].text
     btn.onclick = () => 
       send(chanel,{"text":items[i].text,"index":i})
     cont.appendChild(btn);
-    if (btn.data!=btn.innerText){
+    if (btn.data!=btn.innerText && chanel=="songSet"){
       const subBtn=document.createElement("button");
       const dv=document.createElement("div");
-      dv.innerText=btn.data
+      dv.innerText=btn.data.titles.join('\n')+"\n---\n"+btn.data.verses.join('\n')
       dv.dataShow="none"
       subBtn.innerText="👁"
       subBtn.onclick=(event)=>{
@@ -45,6 +50,34 @@ function loadData(chanel,data,contID){
     }
   }
 }
+socket.on("songSelected", (data) =>{
+//songidx,vidx
+  var tmp
+  var nx
+  var prv
+  document.querySelectorAll(".HLT").forEach(b=>b.className="");
+  const SF=document.getElementById("SongScroll")
+  SF.children[2*data['songidx']].className="HLT"
+  const vs=SF.children[2*data['songidx']].data.verses
+  if (data['vidx']>0)
+    prv=vs[data['vidx']-1].split('\n')[0]
+  else if (data['vidx']==0)
+    prv="Dal elötti üres"
+  else {
+    if (data['songidx']==0){
+      tmp=SF.children[SF.children.length-2].data.verses
+    }else{
+      tmp=SF.children[2*(data['songidx']-1)].data.verses
+    }
+    prv=tmp[tmp.length-1].split('\n')[0]
+  }
+  if (data['vidx']<vs.length-1)
+    nx=vs[data['vidx']+1].split('\n')[0]
+  else 
+    nx="Dal utáni logó"
+  document.getElementById("PrevNote").innerText=prv
+  document.getElementById("NextNote").innerText=nx
+})
 socket.on("volume",v =>{
   document.getElementById("volume").value=v
 })
@@ -67,7 +100,7 @@ socket.on("template",data =>{
 function filterBtns(input,buttons){
   buttons.forEach(btn=>{
     if (btn.data) {//Not the eyes
-      btn.style.display= sanitize(btn.data).includes(sanitize(input.value))?"":"none"
+      btn.style.display= btn.searchData.includes(sanitize(input.value))?"":"none"
       if (""==btn.style.display)
         btn.nextSibling.style.display=btn.nextSibling.dataShow
       else

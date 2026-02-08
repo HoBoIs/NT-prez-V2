@@ -24,8 +24,6 @@ function loadData(chanel,data,contID){
     const btn=document.createElement("button");
     btn.innerHTML = "<div>"+items[i].text+"</div>";
     btn.data = items[i]
-    //This is for songs
-    //TODO split the function for songs/talks/...
     btn.searchData=items[i].text
     btn.onclick = () => 
       send(chanel,{"text":items[i].text,"index":i})
@@ -56,6 +54,8 @@ socket.on("songSelected", (data) =>{
   const SF=document.getElementById("SongScroll")
   SF.children[2*data['songidx']].className="HLT"
   const vs=SF.children[2*data['songidx']].data.verses
+  if (data['vidx']>=0 && data['vidx']<vs.length)
+    SF.children[2*data['songidx']+1].children[data['vidx']+1].className="HLT"
   if (data['vidx']>0)
     prv=vs[data['vidx']-1].split('\n')[0]
   else if (data['vidx']==0)
@@ -91,16 +91,27 @@ socket.on("songs",songs =>{
     const btn=document.createElement("button");
     btn.innerHTML = "<div>"+items[i].text+"</div>";
     btn.data = items[i]
-    //This is for songs
-    //TODO split the function for songs/talks/...
-    btn.searchData=sanitize(btn.songs.titles.join(""))+"¤"+sanitize(btn.songs.verses.join(""))
+    btn.searchData=sanitize(btn.data.titles.join(""))+"¤"+sanitize(btn.data.verses.join(""))
     btn.onclick = () => 
-      send("songSet",{"text":items[i].text,"index":i})
+      send("songSet",{"text":items[i].text,"index":i,"verseIdx":0})
     cont.appendChild(btn);
-    if (btn.songs!=btn.innerText){
+    if (btn.data!=btn.innerText){
       const subBtn=document.createElement("button");
       const dv=document.createElement("div");
-      dv.innerText=btn.songs.titles.join('\n')+"\n---\n"+btn.songs.verses.join('\n')
+      //dv.innerText=btn.data.titles.join('\n')+"\n---\n"+btn.data.verses.join('\n')
+      const dvTop=document.createElement("button")
+      dv.appendChild(dvTop)
+      dvTop.innerHTML=btn.data.titles.join('\n')
+      dvTop.onclick = () => 
+        send("songSet",{"text":items[i].text,"index":i,"verseIdx":0})
+      for (let j=0; j<btn.data.verses.length; j+=1){
+        const b=document.createElement("button")
+        b.onclick=()=>
+          send("songSet",{"text":items[i].text,"index":i,"verseIdx":j})
+        b.innerText=btn.data.verses[j]
+        dv.appendChild(b)
+
+      }
       dv.dataShow="none"
       subBtn.innerText="👁"
       subBtn.onclick=(event)=>{

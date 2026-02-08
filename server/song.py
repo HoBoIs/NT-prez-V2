@@ -38,11 +38,11 @@ class SongListState(state.State):
     songs:list[Song]
     SongIdx:int=0
     atEnd=False
-    def __init__(self,ts,songs,idx=0):
+    def __init__(self,ts,songs,idx=0,verseIdx=0):
         super().__init__(ts)
         self.songs=songs
         self.SongIdx=idx
-        self.childState=SongState(self,song=self.songs[idx])
+        self.childState=SongState(self,song=self.songs[idx],verseIdx=verseIdx)
         self.atEnd=False
         self.kind="SongListState"
     def nextState(self):

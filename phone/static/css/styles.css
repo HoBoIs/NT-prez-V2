@@ -84,6 +84,9 @@ button:active {
 .scrollable div{
   font-size: clamp(10px,3vw,3vh);
 }
+.scrollable div button{
+  font-size: clamp(10px,3vw,3vh);
+}
 .scrollable button button{
   width: auto;
   height: 100%;

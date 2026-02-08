@@ -177,8 +177,8 @@ def sendsong(data):
         pres_txt=data['text']
         if lstate.songs[pres_idx]['text']!=pres_txt:
             sendSongs()
-        state._state=SongListState(state,state.data.songs,pres_idx)
-        emit("songSelected",{"songidx":data['index'],"vidx":0},broadcast=True)
+        state._state=SongListState(state,state.data.songs,pres_idx,data["verseIdx"])
+        emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         #print(state._state.childState)
 
 def start():

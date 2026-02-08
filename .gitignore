@@ -1,10 +1,10 @@
 .v_env
 activate.sh
 *.swp
-server/res/music/*
-server/res/talkmusic/*
-server/res/talks.json
-server/res/config.json
-server/res/videos/*
+state/res/music/*
+state/res/talkmusic/*
+state/res/talks.json
+state/res/config.json
+state/res/videos/*
 __pycache__
-server/res/images/*
+state/res/images/*

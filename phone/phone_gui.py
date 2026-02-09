@@ -9,7 +9,8 @@ from state.talk import Talk
 from state.song import Song, SongListState, SongState
 import state.topState as topState
 import time
-
+from display.signals import QtBridge
+name="Web"
 lastUsedBy='INVALIDIP'
 lastUsedTime=0
 def shouldIgnore(ip,gottime):
@@ -35,8 +36,11 @@ class ComState:
         self.musics=[transformMusic(s) for s in st.data.musics]
 state : topState.TopState
 lstate: ComState
-def init(ts :topState.TopState):
+bridge:QtBridge
+def init(ts :topState.TopState,b:QtBridge):
     global state
+    global bridge
+    bridge=b
     state=ts
     global lstate
     lstate=ComState([],[],[],[])
@@ -74,7 +78,8 @@ def sendTalks():
     emit("talks",lstate.talks)
 def sendMusics():
     emit("musics",lstate.talks)
-
+def onchange(kind):
+    pass
 @socketio.on("connect")
 def on_connect():
     sendSongs()
@@ -138,6 +143,7 @@ def command(data):
         if txt=="Next":
             state._state.nextState()
             sendSongState()
+            bridge.stateUpdated.emit("")
         elif txt=="Prev":
             state._state.prevState()
             sendSongState()
@@ -168,5 +174,5 @@ def sendsong(data):
         #print(state._state.childState)
 
 def start():
-    socketio.run(app,host="0.0.0.0", debug=True)
+    socketio.run(app,host="0.0.0.0", debug=False,use_reloader=False)
     #app.run(host="0.0.0.0",debug=True)

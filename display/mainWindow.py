@@ -21,21 +21,27 @@ class MainWindow(QMainWindow):
         self.scene=QGraphicsScene(self)
         self.view = QGraphicsView(self.scene, self)
         self.scene.addItem(self.textDisplay)
-        self.scene.setBackgroundBrush(QColor("white"))
+        self.scene.setBackgroundBrush(QColor("white" if not TopState._opts.inversion else "black"))
         self.is_fullscreen=False
+        self.setCentralWidget(self.view)
+        self.view.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def renderState(self,s=""):
         toR=self.state.getBonnomState()
         if type(toR)==SongState:
             self.renderVerse(toR.actual.verses[toR.verseIdx])
-    def renderVerse(self,verse):
+    def renderVerse(self,verse:str):
         print(verse)
         self.textDisplay.setVisible(True)
-        self.textDisplay.setHtml(verse)
+        self.textDisplay.setPlainText(verse)
+        #self.textDisplay.setHtml(verse)
+        self.handleInvert()
+        defaultFont=20
+        self.textDisplay.setFont(QFont("Arial", defaultFont))
+        self.adjustFontSize()
         pass
     def addBridge(self,b:QtBridge):
         self.bridge=b
-        
         self.bridge.stateUpdated.connect(self.renderState)
     def keyPressEvent(self, a0):
         super().keyPressEvent(a0)
@@ -49,3 +55,16 @@ class MainWindow(QMainWindow):
             else:
                 self.showFullScreen()
             self.is_fullscreen = not self.is_fullscreen
+        if a0 and a0.key() == Qt.Key.Key_F1:
+            self.adjustFontSize()
+    def handleInvert(self):
+        self.scene.setBackgroundBrush(QColor("white" if not TopState._opts.inversion else "black"))
+        self.textDisplay.setDefaultTextColor(QColor("white" if TopState._opts.inversion else "black"))
+    def adjustFontSize(self):
+        vp=self.view.viewport()
+        if vp: # Just for type-correctness
+            self.textDisplay.setScale(min(
+                vp.width() / self.textDisplay.boundingRect().width(),
+                vp.height() / self.textDisplay.boundingRect().height()
+            ))
+

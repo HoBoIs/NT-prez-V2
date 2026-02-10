@@ -146,6 +146,7 @@ def command(data):
             bridge.stateUpdated.emit("")
         elif txt=="Prev":
             state._state.prevState()
+            bridge.stateUpdated.emit("")
             sendSongState()
         elif txt=="Skip":
             pass
@@ -157,6 +158,7 @@ def command(data):
             pass
         elif txt=="Invert":
             state._opts.inversion=not state._opts.inversion
+            bridge.stateUpdated.emit("")
         #TODO: notify
 
 @socketio.on("songSet")
@@ -172,6 +174,7 @@ def sendsong(data):
         state._state=SongListState(state,state.data.songs,pres_idx,data["verseIdx"])
         emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         #print(state._state.childState)
+        bridge.stateUpdated.emit("")
 
 def start():
     socketio.run(app,host="0.0.0.0", debug=False,use_reloader=False)

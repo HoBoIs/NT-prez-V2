@@ -10,6 +10,7 @@ from state.song import Song, SongListState, SongState
 import state.topState as topState
 import time
 from display.signals import QtBridge
+import socket
 name="Web"
 lastUsedBy='INVALIDIP'
 lastUsedTime=0
@@ -175,7 +176,17 @@ def sendsong(data):
         emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         #print(state._state.childState)
         bridge.stateUpdated.emit("")
-
+def find_free_port(start_port=8000, max_tries=40):
+    port = start_port
+    for _ in range(max_tries):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("0.0.0.0", port))
+                print("using port:",port)
+                return port
+            except OSError:
+                port += 1
+    raise RuntimeError("No free ports available")
 def start():
-    socketio.run(app,host="0.0.0.0", debug=False,use_reloader=False)
+    socketio.run(app,host="0.0.0.0", debug=False,use_reloader=False,port=find_free_port())
     #app.run(host="0.0.0.0",debug=True)

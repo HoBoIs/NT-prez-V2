@@ -116,6 +116,12 @@ def onSondSet(data):
             state._opts.Volume=int(txt[7:])
             emit("volume",state._opts.Volume,broadcast=True)
     
+def inc(x:float,sign:str,y:float):
+    d=0.02 if sign=="+" else -0.02
+    x+=d
+    if x<0: return 0
+    return min(0.95-y,x)
+
 
 @socketio.on("margin")
 def marginSet(data):
@@ -124,7 +130,17 @@ def marginSet(data):
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return
         txt=data["text"]
-        #TODO
+        if txt=="Reset":
+            state.margins=topState.Margins(0,0,0,0)
+        elif txt[0]=='L':
+            state.margins.left=inc(state.margins.left,txt[1],state.margins.right)
+        elif txt[0]=='T':
+            state.margins.top=inc(state.margins.top,txt[1],state.margins.bottom)
+        elif txt[0]=='B':
+            state.margins.bottom=inc(state.margins.bottom,txt[1],state.margins.top)
+        elif txt[0]=='R':
+            state.margins.right=inc(state.margins.right,txt[1],state.margins.left)
+        bridge.stateUpdated.emit("")
 def sendSongState():
   if (isinstance(state._state,SongListState)):
       si=state._state.SongIdx

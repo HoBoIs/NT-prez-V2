@@ -3,9 +3,11 @@ from PyQt6.QtCore import Qt
 import typing
 import sys
 from display.signals import QtBridge
+from state.imageState import Image, ImageState
 from state.song import SongState
+from state.titleState import Title, TitleState
 from state.topState import TopState
-from PyQt6.QtGui import QFont, QKeyEvent, QPaintDevice, QPainter, QTransform,QColor
+from PyQt6.QtGui import QFont, QKeyEvent, QPaintDevice, QPainter, QPixmap, QTransform,QColor
 from PyQt6.QtCore import QTimer, QUrl, Qt
 from PyQt6.QtGui import QFontMetrics
 class MainWindow(QWidget):
@@ -35,11 +37,36 @@ class MainWindow(QWidget):
         self.clearLayout()
         if type(toR)==SongState:
             self.renderVerse(toR.actual.verses[toR.verseIdx])
+        elif type(toR)==ImageState:
+            self.renderImage(toR.image)
+        elif type(toR)==TitleState:
+            self.renderTitle(toR.title)
     def clearLayout(self):
         while self.layout_.count():
             if tmp:=self.layout_.takeAt(0):
                 if tmp:= tmp.widget():
                     tmp.setParent(None)
+    def renderTitle(self,t:Title):
+        self.textDisplay.setText("<h1>"+t.title+"</h1>"+"<h3>"+t.subTitle+"</h3>")
+        self.layout_.addWidget(self.textDisplay)
+        self.textDisplay.show()
+        self.adjustBorders()
+        self.adjustFontSize()
+        self.handleInvert()
+    def renderImage(self,image:Image):
+        self.textDisplay.setText("")
+        #self.textDisplay.setPixmap(QPixmap(image.path))
+        self.layout_.addWidget(self.textDisplay)
+        self.textDisplay.show()
+        self.adjustBorders()
+        self.adjustImgSize(image)
+        pass
+    def adjustImgSize(self,image:Image):
+        m=self.state.margins
+        wMax=int(self.width()*1*(1-m.left-m.right))
+        hMax=int(self.height()*1*(1-m.top-m.bottom))
+        self.textDisplay.setPixmap(QPixmap(image.path).scaled(wMax,hMax,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+
 
     def renderVerse(self,verse:str):
         verse=verse.strip()
@@ -73,6 +100,8 @@ class MainWindow(QWidget):
             self.is_fullscreen = not self.is_fullscreen
         if a0 and a0.key() == Qt.Key.Key_F1:
             self.adjustFontSize()
+        if a0 and a0.key() == Qt.Key.Key_F2:
+            self.state._state.print()
     def handleInvert(self):
         backgroundColor="white"
         textColor="black"
@@ -80,13 +109,16 @@ class MainWindow(QWidget):
             backgroundColor,textColor=textColor,backgroundColor
         self.textDisplay.setStyleSheet("background-color: "+backgroundColor+"; color: "+textColor+";")
     def resizeEvent(self, a0):
-        if self.state.getBonnomState().kind=="SongState":
+        s=self.state.getBonnomState()
+        if isinstance(s,SongState):
             self.adjustFontSize()
+        elif isinstance(s,ImageState):
+            self.adjustImgSize(s.image)
         super().resizeEvent(a0)
     def adjustFontSize(self):
         font = self.textDisplay.font()
-        font.setPointSize(1)
-        self.textDisplay.setFont(font)
+        font.setPointSize(1)#??
+        self.textDisplay.setFont(font)#??
         m=self.state.margins
         wMax=int(self.width()*0.9*(1-m.left-m.right))
         hMax=int(self.height()*0.9*(1-m.top-m.bottom))
@@ -103,4 +135,5 @@ class MainWindow(QWidget):
             else:
                  high=mid-1
         font.setPointSize(low)
+        print(low)
         self.textDisplay.setFont(font)

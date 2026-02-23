@@ -1,65 +1,39 @@
 from dataclasses import dataclass,field
 from enum import Enum
+from state import topState
+from state.song import SongState
 from state.state import State
 from state.talk import Talk
+from state.template import Template, makeSongChecked
+import state.titleState as tlState
+import state.custumState as custumState
+import state.imageState as imgState
 #from state.song import Song
-@dataclass
-class TalkState(State):
-    talk:Talk=Talk("","","",True,"",[])
-    class part(Enum):
-        during=0
-        music=1
-        thank=2
-    p:part=part.during
-    idx=0
-    def __init__(self, ts ,t:Talk):
-        self.talk=t
-        self.p=self.part.during
-        super().__init__(ts)
-        self.kind="TalkState"
-    """def showTalk(self):
-        self.p=self.part.during
-        self.mainWindow.displayTalk(self.talk.title,self.talk.name)"""
-    def startMusic(self):
-        self.p=self.part.music
-        print(3,self.talk.mediaPath)
-        if self.talk.isMusic:
-            self.topState.audioFile=self.talk.mediaPath
-            self.topState.videoFile=""
-            self.mediaAllerts.append("PLAY")
-        else:
-            self.topState.videoFile=self.talk.mediaPath
-            self.topState.audioFile=""
-            self.mediaAllerts.append("PLAY")
-    def showThanks(self):
-        self.p=self.part.thank
-        self.mediaAllerts.append("STOP")
-    def nextState(self):
-        self.idx+=1
-        if self.p==self.part.during and self.idx>len(self.talk.pictures):
-            self.idx=len(self.talk.pictures)
-        if self.p==self.part.music and self.idx>len(self.talk.musicSong):
-            self.idx=len(self.talk.musicSong)
-    def prevState(self):
-        self.idx-=1
-        if self.idx<-1:
-            self.idx=-1
-"""
-    def render(self):
-        if self.p==self.part.during:
-            if -1<self.idx<len(self.talk.pictures):
-                self.mainWindow.displayPicture(self.talk.pictures[self.idx])
-            else:
-                self.mainWindow.displayTalk(self.talk.title,self.talk.name)
-        elif self.p == self.part.music:
-            #TODO video
-            if self.talk.musicSong!=None and -1<self.idx<len(self.talk.musicSong):
-                self.mainWindow.displayVerse(self.talk.musicSong[self.idx])
-            else:
-                self.mainWindow.displayTalk(self.talk.title,self.talk.name)
-        else: #thank
-            self.mainWindow.displayVerse(self.talk.thanks)
-"""
-            
 
-    
+class TalkState(custumState.CustumState):
+    talk:Talk
+    def __init__(self, ts:topState.TopState | State ,t:Talk):
+        self.talk=t
+        if isinstance(ts,topState.TopState):
+            self.topState=ts
+        else:
+            self.topState=ts.topState
+        l:list[State]=[tlState.TitleState(self,tlState.Title(t.title,t.name))]
+        if not isinstance(ts,topState.TopState):
+            t0=ts.topState
+        else: 
+            t0=ts
+        if t.pictures:
+            l+=[imgState.ImageState(self,t0.findImg(i)) for i in t.pictures]
+            l+=[tlState.TitleState(self,tlState.Title(t.title,t.name))]
+        if s:=t0.findSong(t.musicSong):
+            l+=[SongState(self,s)]
+        m=custumState.Media(t.isMusic,len(l),t.mediaPath,self)
+        l+=[SongState(self,makeSongChecked(t.thanks[0],[t.thanks[1]]))]
+        super().__init__(ts,l,m)
+        print(self.talk)
+        self.kind="TalkState"
+    def print(self):
+        return super().print()
+
+

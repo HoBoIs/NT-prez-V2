@@ -1,0 +1,15 @@
+{
+  "maxSongFont" : 100,
+  "maxTalkFont" : 80,
+  "sleepLength" : 10,
+  "port" : 8000,
+  "imagesAfterSong" : ["fiatalok_light.png","polominta_light.png"],
+  "imagesBeforeSong" : [],
+  "musicDir" : "./res/music/",
+  "imageDir" : "./res/images/",
+  "songDir"  : "./res/songs/",
+  "videoDir" : "./res/videos/",
+  "templateDir" : "./res/templates/",
+  "talkMusicDir" : "./res/talkmusic/",
+  "nonInvertableImages" : []
+}

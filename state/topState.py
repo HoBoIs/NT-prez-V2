@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from threading import Lock
 from typing import Callable
+from state.imageState import Image
 from state.song import Song
 from state.talk import Talk
 import state.state as state
 import state.mediainfo as mediainfo
+from state.template import Template
 
 @dataclass
 class options:
@@ -18,7 +20,10 @@ class dataContainer:
     songs:list[Song]
     talks:list[Talk]
     musics:list[str]
-    templstes : list[str] #FIXME
+    templstes : list[Template] 
+    images:list[Image]
+    imagesAfterSongs:list[Image]
+    imagesBeforeSongs:list[Image]
 @dataclass
 class Margins:
     top:   float= 0
@@ -47,6 +52,19 @@ class TopState:
         while isinstance(res.childState,state.State):
             res=res.childState
         return res
+    def findSong(self,title:str| None,matchFn:Callable[[str,str],bool]=lambda x,y: x==y):
+        if title==None:
+            return None
+        for s in self.data.songs:
+            for t in s.titles:
+                if matchFn(t,title):
+                    return s
+        return None
+    def findImg(self,img:str):
+        for s in self.data.images:
+            if s.path.endswith("/"+img):
+                return s
+        return Image("",True)#Just to avoid static type errors We never get here
 '''
     def subsscribeChange(self,foo:Callable,name:str):
         self.subs.append((foo,name))

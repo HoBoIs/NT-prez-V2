@@ -5,12 +5,9 @@ import json
 def readSong(path:str)->Song:
     with open(path) as f:
         data=json.load(f)
-        c=""
-        if "comment" in data:
-            c=data["comment"]
         if "lent_verses" in data:
             pass #TODO
-        return Song(data['titles'],data['sections'],c)
+        return Song(data['titles'],data['sections'])
 
 def readSongs(path:str)->list[Song]:
     res :list[Song]=[]

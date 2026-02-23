@@ -5,13 +5,14 @@ from dataclasses import dataclass
 class Song:
     titles:list[str]
     verses:list[str]
-    comment: str
 
 #from state.songReader import readSongs
+from state import topState
+from state.imageState import ImageState,Image
 import state.state as state
 
 class SongState(state.State):
-    actual :Song =Song([],[],"")
+    actual :Song =Song([],[])
     verseIdx: int = 0
     def __init__(self,tw,song,verseIdx=0):
         self.actual=song
@@ -32,14 +33,16 @@ class SongState(state.State):
         print(self.verseIdx,self.actual.verses[self.verseIdx])
         return super().print()
 
-from state.config import config
+from state.config import Config
 
 class SongListState(state.State):
     songs:list[Song]
     SongIdx:int=0
     atEnd=False
+    inSong=True
     def __init__(self,ts,songs,idx=0,verseIdx=0):
         super().__init__(ts)
+        self.inSong=True
         self.songs=songs
         self.SongIdx=idx
         self.childState=SongState(self,song=self.songs[idx],verseIdx=verseIdx)
@@ -60,15 +63,34 @@ class SongListState(state.State):
             s=self.songs[self.SongIdx]
             self.childState=SongState(self,song=s,verseIdx=len(s.verses)-1)
     def childEndedNxt(self):
-        self.SongIdx+=1
-        self.childState=None
-        self.atEnd=True
-        if self.SongIdx==len(self.songs):
-            self.SongIdx=0
+        self.inSong=not self.inSong
+        if not self.inSong:
+            image=Image("")
+            if l:=self.topState.data.imagesAfterSongs:
+                image=l[0] #TODO choose random
+            self.childState=ImageState(self,image)
+        else:
+            self.SongIdx+=1
+            if self.SongIdx==len(self.songs):
+                self.SongIdx=0
+            self.childState=SongState(self,song=self.songs[self.SongIdx])
+
 
     def childEndedPrev(self):
-        self.childState=None
-        self.atEnd=False
+        self.inSong=not self.inSong
+        if not self.inSong:
+            image=Image("")
+            if l:=self.topState.data.imagesBeforeSongs:
+                image=l[0] #TODO choose random
+            self.childState=ImageState(self,image)
+        else:
+            self.SongIdx-=1
+            if self.SongIdx==-1:
+                self.SongIdx=len(self.songs)-1
+            s=self.songs[self.SongIdx]
+            self.childState=SongState(self,song=s,verseIdx=len(s.verses)-1)
+        #self.childState=None
+        #self.atEnd=False
     def print(self):
         print(self.SongIdx,self.songs[self.SongIdx].titles)
         return super().print()

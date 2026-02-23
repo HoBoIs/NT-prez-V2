@@ -3,6 +3,8 @@ from re import T
 from flask import Flask,request,render_template
 from flask_socketio import SocketIO, emit
 import json
+
+from state.talkState import TalkState
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*") #disable monitoring?
 from state.talk import Talk
@@ -178,6 +180,23 @@ def command(data):
             bridge.stateUpdated.emit("")
         #TODO: notify
 
+@socketio.on("talkSet")
+def sendTalk(data):
+    with state._lock:
+        data=json.loads(data)
+        if (shouldIgnore(request.remote_addr,data["sent_at"])):
+            return 
+        print(data)
+        pres_idx=data['index']
+        pres_txt=data['text']
+
+        if lstate.talks[pres_idx]['text']!=pres_txt:
+            sendSongs()
+            return
+        state._state=TalkState(state,state.data.talks[pres_idx])
+        emit("talkSelected",{"talkidx":data['index']},broadcast=True)
+        bridge.stateUpdated.emit("")
+
 @socketio.on("songSet")
 def sendsong(data):
     with state._lock:
@@ -188,6 +207,7 @@ def sendsong(data):
         pres_txt=data['text']
         if lstate.songs[pres_idx]['text']!=pres_txt:
             sendSongs()
+            return
         state._state=SongListState(state,state.data.songs,pres_idx,data["verseIdx"])
         emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         #print(state._state.childState)

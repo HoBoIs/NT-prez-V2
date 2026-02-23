@@ -7,6 +7,7 @@ from state.talk import Talk
 import state.state as state
 import state.mediainfo as mediainfo
 from state.template import Template
+import state.config as conf
 
 @dataclass
 class options:
@@ -34,6 +35,7 @@ class Margins:
 class TopState:
     data : dataContainer
     margins:Margins
+    chg:conf.Config
     subs:list[tuple [Callable,str]]
     _lock:Lock =Lock()
     audioFile : None | str=None
@@ -41,11 +43,12 @@ class TopState:
     imageFile: None | str = None
     _opts = options()
     _m_info=mediainfo.mediaInfo()
-    def __init__(self,data:dataContainer):
+    def __init__(self,data:dataContainer,c:conf.Config):
         self._state=state.State(self )
         self.data=data
         self.margins=Margins()
         self.subs=[]
+        self.cfg=c
     def getBonnomState(self):
         res=self._state
         #if isinstance()

@@ -224,5 +224,8 @@ def find_free_port(start_port=8000, max_tries=40):
                 port += 1
     raise RuntimeError("No free ports available")
 def start():
-    socketio.run(app,host="0.0.0.0", debug=False,use_reloader=False,port=find_free_port())
+    if (state.cfg.server):
+        socketio.run(app,host="0.0.0.0", debug=False,use_reloader=False,port=find_free_port())
+    else:
+        socketio.run(app,debug=False,use_reloader=False,port=find_free_port())
     #app.run(host="0.0.0.0",debug=True)

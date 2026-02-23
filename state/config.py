@@ -19,6 +19,7 @@ class Config:
   origDir : str
   nonInvertableImages:list[str]
   templateDir : str
+  server : bool
 
 def readConfig():
     origDir= os.path.dirname(__file__)+"/../"
@@ -40,6 +41,7 @@ def readConfig():
           songDir=origDir+data["songDir"],
           videoDir=origDir+data["videoDir"],
           talkMusicDir=origDir+data["talkMusicDir"],
+          server=data["server"],
           nonInvertableImages=data["nonInvertableImages"]
           )
 def stripOrig(s1:str,o:str):

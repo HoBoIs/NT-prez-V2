@@ -29,7 +29,7 @@ ds=dataContainer(
         images=images,
         imagesAfterSongs=imagesAfterSong,
         imagesBeforeSongs=imagesBeforeSong)
-ts=TopState(ds)
+ts=TopState(ds,c)
 
 
 import phone.phone_gui

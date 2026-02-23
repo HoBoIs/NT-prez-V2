@@ -11,5 +11,6 @@
   "videoDir" : "./res/videos/",
   "templateDir" : "./res/templates/",
   "talkMusicDir" : "./res/talkmusic/",
+  "server":true,
   "nonInvertableImages" : []
 }

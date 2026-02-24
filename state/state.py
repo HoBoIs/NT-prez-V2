@@ -47,6 +47,11 @@ class State:
         return "N/A"
     def getType(self):
         return "N/A"
+    def getChain(self) -> list["State"]:
+        res :list[State]= [self]
+        if self.childState:
+            res+=self.childState.getChain()
+        return res
     def getAllerts(self):
         if self.childState:
             self.childState.getAllerts()

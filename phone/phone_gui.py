@@ -174,7 +174,10 @@ def command(data):
         elif txt=="Music":
             pass
         elif txt=="Thanks":
-            pass
+            for s in state._state.getChain():
+                if isinstance(s,TalkState):
+                    s.toThanks()
+                    bridge.stateUpdated.emit("")
         elif txt=="Invert":
             state._opts.inversion=not state._opts.inversion
             bridge.stateUpdated.emit("")

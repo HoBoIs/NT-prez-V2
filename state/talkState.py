@@ -12,6 +12,7 @@ import state.imageState as imgState
 
 class TalkState(custumState.CustumState):
     talk:Talk
+    thxIdx:int
     def __init__(self, ts:topState.TopState | State ,t:Talk):
         self.talk=t
         if isinstance(ts,topState.TopState):
@@ -28,11 +29,19 @@ class TalkState(custumState.CustumState):
             l+=[tlState.TitleState(self,tlState.Title(t.title,t.name))]
         if s:=t0.findSong(t.musicSong):
             l+=[SongState(self,s)]
-        m=custumState.Media(t.isMusic,len(l),t.mediaPath,self)
+        m=custumState.Media(t.isMusic,t.mediaPath,self.toThanks,self)
+        self.thxIdx=len(l)
         l+=[SongState(self,makeSongChecked(t.thanks[0],[t.thanks[1]]))]
+        if len(l)==self.thxIdx:
+            self.thxIdx=-1
         super().__init__(ts,l,m)
         print(self.talk)
         self.kind="TalkState"
+    def toThanks(self):
+        if self.thxIdx==-1:
+            return
+        self.idx=self.thxIdx
+        self.childState=self.substates[self.idx]
     def print(self):
         return super().print()
 

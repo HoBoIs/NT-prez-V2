@@ -1,3 +1,4 @@
+from typing import Callable
 import state.state as state
 import state.topState as topState
 from dataclasses import dataclass
@@ -5,9 +6,9 @@ from dataclasses import dataclass
 @dataclass
 class Media:
     isMusic:bool
-    atEndIdx:int
     path:str
-    parent:"CustumState"#TODO use weekref to avoid memory-leaks
+    adEnfFun:Callable= lambda : 0
+    parent:"CustumState | None"=None
 
 
 class CustumState(state.State):
@@ -41,11 +42,11 @@ class CustumState(state.State):
         self.childState=l[0]
         self.media=m
         self.kind="CustumState"
-    def atMediaEnd(self, m:Media):
+    """def atMediaEnd(self, m:Media):
         if m.atEndIdx==-1:
             return
         self.idx=m.atEndIdx
-        self.childState=self.substates[self.idx]
+        self.childState=self.substates[self.idx]"""
     def print(self):
         print(self.idx)
         return super().print()

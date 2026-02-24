@@ -9,7 +9,15 @@ from state.titleState import Title, TitleState
 from state.topState import TopState
 from PyQt6.QtGui import QFont, QKeyEvent, QPaintDevice, QPainter, QPixmap, QTransform,QColor
 from PyQt6.QtCore import QTimer, QUrl, Qt
-from PyQt6.QtGui import QFontMetrics
+from PyQt6.QtGui import QFontMetrics,QTextDocument
+
+def html_bounding_rect(html: str, font: QFont):
+    doc = QTextDocument()
+    doc.setDefaultFont(font)
+    doc.setHtml(html)
+    #doc.setTextWidth(max_width)   # force wrapping to label width
+    return doc.size()
+
 class MainWindow(QWidget):
     state:TopState
     name:str
@@ -47,7 +55,9 @@ class MainWindow(QWidget):
                 if tmp:= tmp.widget():
                     tmp.setParent(None)
     def renderTitle(self,t:Title):
-        self.textDisplay.setText("<h1>"+t.title+"</h1>"+"<h3>"+t.subTitle+"</h3>")
+        self.textDisplay.setText('<h1>'+t.title+'</h1>' # <h1/h2?>
+                                 +'<h2>'+t.subTitle+'<h2>'
+                                 )
         self.layout_.addWidget(self.textDisplay)
         self.textDisplay.show()
         self.adjustBorders()
@@ -126,14 +136,10 @@ class MainWindow(QWidget):
         while low<high:
             mid = (low + high+1) // 2
             font.setPointSize(mid)
-            fm = QFontMetrics(font)
-            rect = fm.boundingRect(0,0,wMax,hMax,
-                                   Qt.TextFlag.TextExpandTabs, #TODO ?? 
-                                   self.textDisplay.text())
+            rect =  html_bounding_rect(self.textDisplay.text(),font)
             if rect.width() <= wMax and rect.height ()<=hMax:
                  low=mid
             else:
                  high=mid-1
         font.setPointSize(low)
-        print(low)
         self.textDisplay.setFont(font)

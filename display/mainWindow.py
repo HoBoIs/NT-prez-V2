@@ -80,6 +80,7 @@ class MainWindow(QWidget):
 
     def renderVerse(self,verse:str):
         verse=verse.strip()
+        verse=verse.replace('\n','<br/>')
         self.textDisplay.show()
         self.layout_.addWidget(self.textDisplay)
         self.textDisplay.setText(verse)

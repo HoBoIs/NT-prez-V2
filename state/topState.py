@@ -1,20 +1,38 @@
 from dataclasses import dataclass
 from threading import Lock
 from typing import Callable
-from state.imageState import Image
+from state.image import Image
 from state.song import Song
 from state.talk import Talk
 import state.state as state
 import state.mediainfo as mediainfo
 from state.template import Template
 import state.config as conf
+import typing
+
+if typing.TYPE_CHECKING:
+    from state.custumState import CustumState
+
+@dataclass
+class MediaDescript:
+    isMusic:bool
+    path:str
+    adEnfFun:Callable= lambda : 0
+    parent:"CustumState | None"=None
 
 @dataclass
 class options:
     autoPlay:bool=True
-    Volume: float=0.8
+    Volume: float=80
     sleepLength = 3
     inversion=False
+
+@dataclass
+class MediaInfo:
+    descript:MediaDescript
+    status:str
+    length:float
+    age:float
 
 @dataclass
 class dataContainer:
@@ -35,12 +53,10 @@ class Margins:
 class TopState:
     data : dataContainer
     margins:Margins
-    chg:conf.Config
+    cfg:conf.Config
     subs:list[tuple [Callable,str]]
     _lock:Lock =Lock()
-    audioFile : None | str=None
-    videoFile : None | str=None
-    imageFile: None | str = None
+    media:MediaInfo | None=None
     _opts = options()
     _m_info=mediainfo.mediaInfo()
     def __init__(self,data:dataContainer,c:conf.Config):

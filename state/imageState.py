@@ -1,13 +1,8 @@
 from state.config import Config
 import state.state as state
 import state.topState as topState
-from dataclasses import dataclass
 import os
-
-@dataclass 
-class Image:
-    path:str
-    invertable:bool=True
+from state.image import Image
 
 class ImageState(state.State):
     image:Image

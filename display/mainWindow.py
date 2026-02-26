@@ -1,15 +1,19 @@
 from PyQt6.QtWidgets import QApplication, QBoxLayout, QGraphicsScene, QGraphicsTextItem, QLabel, QMainWindow, QVBoxLayout, QWidget, QGraphicsView,QVBoxLayout
+import math
 from PyQt6.QtCore import Qt
 import typing
 import sys
-from display.signals import QtBridge
+from display.signals import QtBridge,MEvent
+from state.custumState import MediaDescript
 from state.imageState import Image, ImageState
-from state.song import SongState
+from state.songState import SongState
+from state.talkState import TalkState
 from state.titleState import Title, TitleState
-from state.topState import TopState
+from state.topState import MediaInfo, TopState
 from PyQt6.QtGui import QFont, QKeyEvent, QPaintDevice, QPainter, QPixmap, QTransform,QColor
 from PyQt6.QtCore import QTimer, QUrl, Qt
 from PyQt6.QtGui import QFontMetrics,QTextDocument
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 def html_bounding_rect(html: str, font: QFont):
     doc = QTextDocument()
@@ -26,9 +30,15 @@ class MainWindow(QWidget):
     view:QGraphicsView
     background:QWidget
     textDisplay :QLabel
+    player:QMediaPlayer
+    audioOutput:QAudioOutput
     is_fullscreen:bool=False
     def __init__(self, s:TopState):
         super().__init__()
+        self.player=QMediaPlayer()
+        self.audioOutput=QAudioOutput()
+        self.player.setAudioOutput(self.audioOutput)
+        self.player.mediaStatusChanged.connect(self.MediaEnd)
         self.layout_ = QVBoxLayout()
         self.state=s
         self.name="Display"
@@ -39,8 +49,14 @@ class MainWindow(QWidget):
         self.textDisplay.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.resize(800, 600)
         self.setMinimumSize(200,100)
-
-    def renderState(self,s=""):
+    def MediaEnd(self,status):
+        if status==QMediaPlayer.MediaStatus.EndOfMedia:
+            if m:=self.state.media:
+                m.descript.adEnfFun()
+                self.renderState()
+    def renderState(self):
+        self.audioOutput.setVolume(math.log10(self.state._opts.Volume/100*9+1))
+        print( math.log10(self.state._opts.Volume/100*9+1) )
         toR=self.state.getBonnomState()
         self.clearLayout()
         if type(toR)==SongState:
@@ -87,9 +103,26 @@ class MainWindow(QWidget):
         self.adjustBorders()
         self.adjustFontSize()
         self.handleInvert()
+    def handleMedia(self,event:MEvent):
+        if event == MEvent.START:#TODO reseume if paused
+            if m:=self.state._state.getMedia():
+                self.playSong(m)
+                self.state.media=MediaInfo(m,"PLAYING",self.player.duration(),self.player.position())
+        elif event ==MEvent.STOP:
+            self.stopSong()
+            if self.state.media:
+                self.state.media.status="STOPPED"
+        elif event ==MEvent.PAUSE:
+            self.pauseSong()
+            if self.state.media:
+                self.state.media.status="PAUSED"
+                self.state.media.age=float(self.player.position())
+
+        pass
     def addBridge(self,b:QtBridge):
         self.bridge=b
         self.bridge.stateUpdated.connect(self.renderState)
+        self.bridge.mediaEvent.connect(self.handleMedia)
     def adjustBorders(self):
         m=self.state.margins
         self.layout_.setContentsMargins(
@@ -97,6 +130,15 @@ class MainWindow(QWidget):
                 int(m.top*self.height()),
                 int((m.right)*self.width()),
                 int(m.bottom*self.height()))
+    def pauseSong(self):
+        self.player.pause()
+    def stopSong(self):
+        self.player.stop()
+    def playSong(self,m:MediaDescript):
+        if m.isMusic:
+            self.player.setSource(QUrl.fromLocalFile(m.path))
+            self.player.play()
+            pass
     def keyPressEvent(self, a0):
         super().keyPressEvent(a0)
         if a0 and a0.key() == Qt.Key.Key_Escape:

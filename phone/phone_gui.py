@@ -8,10 +8,11 @@ from state.talkState import TalkState
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*") #disable monitoring?
 from state.talk import Talk
-from state.song import Song, SongListState, SongState
+from state.song import Song
+from state.songState import SongListState, SongState
 import state.topState as topState
 import time
-from display.signals import QtBridge
+from display.signals import QtBridge,MEvent
 import socket
 name="Web"
 lastUsedBy='INVALIDIP'
@@ -104,8 +105,10 @@ def onSondSet(data):
         if txt=="Play":
             pass
         elif txt=="Pause":
+            bridge.mediaEvent.emit(MEvent.PAUSE)
             pass
         elif txt=="Stop":
+            bridge.mediaEvent.emit(MEvent.STOP)
             pass
         elif txt.startswith("Auto:"):
             print(txt)
@@ -117,6 +120,7 @@ def onSondSet(data):
         elif txt.startswith("Volume:"):
             state._opts.Volume=int(txt[7:])
             emit("volume",state._opts.Volume,broadcast=True)
+            bridge.stateUpdated.emit()
     
 def inc(x:float,sign:str,y:float):
     d=0.02 if sign=="+" else -0.02
@@ -142,7 +146,7 @@ def marginSet(data):
             state.margins.bottom=inc(state.margins.bottom,txt[1],state.margins.top)
         elif txt[0]=='R':
             state.margins.right=inc(state.margins.right,txt[1],state.margins.left)
-        bridge.stateUpdated.emit("")
+        bridge.stateUpdated.emit()
 def sendSongState():
   if (isinstance(state._state,SongListState)):
       si=state._state.SongIdx
@@ -162,25 +166,30 @@ def command(data):
         if txt=="Next":
             state._state.nextState()
             sendSongState()
-            bridge.stateUpdated.emit("")
+            bridge.stateUpdated.emit()
         elif txt=="Prev":
             state._state.prevState()
-            bridge.stateUpdated.emit("")
+            bridge.stateUpdated.emit()
             sendSongState()
         elif txt=="Skip":
+            state._state.childEndedNxt()
+            bridge.stateUpdated.emit()
             pass
         elif txt=="Empty":
             pass
         elif txt=="Music":
-            pass
+            for s in state._state.getChain():
+                if isinstance(s,TalkState):
+                    bridge.mediaEvent.emit(MEvent.START)
+                    return
         elif txt=="Thanks":
             for s in state._state.getChain():
                 if isinstance(s,TalkState):
                     s.toThanks()
-                    bridge.stateUpdated.emit("")
+                    bridge.stateUpdated.emit()
         elif txt=="Invert":
             state._opts.inversion=not state._opts.inversion
-            bridge.stateUpdated.emit("")
+            bridge.stateUpdated.emit()
         #TODO: notify
 
 @socketio.on("talkSet")
@@ -189,16 +198,20 @@ def sendTalk(data):
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
-        print(data)
         pres_idx=data['index']
         pres_txt=data['text']
 
         if lstate.talks[pres_idx]['text']!=pres_txt:
-            sendSongs()
+            sendTalks()
             return
         state._state=TalkState(state,state.data.talks[pres_idx])
+        if state.media and isinstance(state.media.descript.parent,TalkState):
+            p=state.media.descript.parent
+            if p.talk.title == state.data.talks[pres_idx].title and p.talk.name == state.data.talks[pres_idx].name:
+                state.media.descript.parent=state._state
+                state.media.descript.adEnfFun=state._state.toThanks
         emit("talkSelected",{"talkidx":data['index']},broadcast=True)
-        bridge.stateUpdated.emit("")
+        bridge.stateUpdated.emit()
 
 @socketio.on("songSet")
 def sendsong(data):
@@ -214,7 +227,8 @@ def sendsong(data):
         state._state=SongListState(state,state.data.songs,pres_idx,data["verseIdx"])
         emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         #print(state._state.childState)
-        bridge.stateUpdated.emit("")
+        bridge.stateUpdated.emit()
+'''
 def find_free_port(start_port=8000, max_tries=40):
     port = start_port
     for _ in range(max_tries):
@@ -226,9 +240,19 @@ def find_free_port(start_port=8000, max_tries=40):
             except OSError:
                 port += 1
     raise RuntimeError("No free ports available")
+'''
+
 def start():
+    import logging
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
     if (state.cfg.server):
-        socketio.run(app,host="0.0.0.0", debug=False,use_reloader=False,port=find_free_port())
+        host='0.0.0.0'
     else:
-        socketio.run(app,debug=False,use_reloader=False,port=find_free_port())
+        host='127.0.0.1'
+    for i in range(20):
+        try:
+            socketio.run(app,host=host, debug=False,use_reloader=False,port=8000+i)
+        except:
+            print("port",8000+i ,"is unusable")
+            pass
     #app.run(host="0.0.0.0",debug=True)

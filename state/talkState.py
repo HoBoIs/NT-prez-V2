@@ -1,7 +1,7 @@
 from dataclasses import dataclass,field
 from enum import Enum
 from state import topState
-from state.song import SongState
+from state.songState import SongState
 from state.state import State
 from state.talk import Talk
 from state.template import Template, makeSongChecked
@@ -15,6 +15,7 @@ class TalkState(custumState.CustumState):
     thxIdx:int
     def __init__(self, ts:topState.TopState | State ,t:Talk):
         self.talk=t
+        self.shouldPlay=False
         if isinstance(ts,topState.TopState):
             self.topState=ts
         else:
@@ -29,7 +30,7 @@ class TalkState(custumState.CustumState):
             l+=[tlState.TitleState(self,tlState.Title(t.title,t.name))]
         if s:=t0.findSong(t.musicSong):
             l+=[SongState(self,s)]
-        m=custumState.Media(t.isMusic,t.mediaPath,self.toThanks,self)
+        m=custumState.MediaDescript(t.isMusic,t.mediaPath,self.toThanks,self)
         self.thxIdx=len(l)
         l+=[SongState(self,makeSongChecked(t.thanks[0],[t.thanks[1]]))]
         if len(l)==self.thxIdx:

@@ -8,12 +8,13 @@ import display.mainWindow as mw
 import state.imageState as image
 from display.signals import QtBridge
 import state.config as conf
+import os
 from state.template import readTemplates
 c=conf.readConfig()
 conf.writeConfig(c)
 app = QApplication(sys.argv)
 bridge=QtBridge()
-
+musics=os.listdir(c.musicDir)
 #TODO: load thoings properly
 songs=readSongs(c.songDir)
 templates=readTemplates(c.templateDir)
@@ -24,7 +25,7 @@ talks=talk.readTalks("./res/talks.json",templates)
 ds=dataContainer(
         songs=songs,
         talks=talks,
-        musics=[],#TODO
+        musics=musics,
         templstes=templates,
         images=images,
         imagesAfterSongs=imagesAfterSong,

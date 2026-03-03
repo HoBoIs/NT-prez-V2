@@ -31,10 +31,11 @@ class TalkState(custumState.CustumState):
         if s:=t0.findSong(t.musicSong):
             l+=[SongState(self,s)]
         m=custumState.MediaDescript(t.isMusic,t.mediaPath,self.toThanks,self)
-        self.thxIdx=len(l)
-        l+=[SongState(self,makeSongChecked(t.thanks[0],[t.thanks[1]]))]
-        if len(l)==self.thxIdx:
-            self.thxIdx=-1
+        self.thxIdx=-1
+        if s:=makeSongChecked(t.thanks[0],[t.thanks[1]]):
+            if s.verses:
+                self.thxIdx=len(l)
+                l+=[SongState(self,s)]
         super().__init__(ts,l,m)
         print(self.talk)
         self.kind="TalkState"

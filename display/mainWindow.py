@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QApplication, QBoxLayout, QGraphicsScene, QGraphicsTextItem, QLabel, QMainWindow, QVBoxLayout, QWidget, QGraphicsView,QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QBoxLayout, QGraphicsScene, QGraphicsTextItem, QGridLayout, QLabel, QMainWindow, QSizePolicy, QStackedLayout, QStackedWidget, QVBoxLayout, QWidget, QGraphicsView,QVBoxLayout,QGraphicsOpacityEffect
 import math
 from PyQt6.QtCore import Qt
 import typing
 import sys
+from display.image import DisplayImage
 from display.signals import QtBridge,MEvent
 from state.custumState import MediaDescript
 from state.imageState import Image, ImageState
@@ -11,7 +12,7 @@ from state.talkState import TalkState
 from state.titleState import Title, TitleState
 from state.topState import MediaInfo, TopState
 from PyQt6.QtGui import QFont, QKeyEvent, QPaintDevice, QPainter, QPixmap, QTransform,QColor
-from PyQt6.QtCore import QTimer, QUrl, Qt
+from PyQt6.QtCore import QTimer, QUrl, Qt, QPropertyAnimation
 from PyQt6.QtGui import QFontMetrics,QTextDocument
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
@@ -25,30 +26,49 @@ def html_bounding_rect(html: str, font: QFont):
 class MainWindow(QWidget):
     state:TopState
     name:str
-    layout_:QVBoxLayout
+    layout_:QGridLayout
     scene:QGraphicsScene
     view:QGraphicsView
     background:QWidget
     textDisplay :QLabel
     player:QMediaPlayer
     audioOutput:QAudioOutput
+    textDisplayInverted:QLabel
     is_fullscreen:bool=False
+    isInv:bool
+    loadedImages:dict[str,DisplayImage]
+    fade_anim : QPropertyAnimation
+    effect : QGraphicsOpacityEffect
     def __init__(self, s:TopState):
         super().__init__()
         self.player=QMediaPlayer()
         self.audioOutput=QAudioOutput()
         self.player.setAudioOutput(self.audioOutput)
         self.player.mediaStatusChanged.connect(self.MediaEnd)
-        self.layout_ = QVBoxLayout()
         self.state=s
         self.name="Display"
-        self.setStyleSheet("background-color: black;")
+        #self.setStyleSheet("background-color: black;")
+
+#        stack = QStackedLayout()
+#        stack.setStackingMode(QStackedLayout.StackingMode.StackAll)
+        self.layout_ = QGridLayout(self)
         self.setLayout(self.layout_)
         self.adjustBorders()
         self.textDisplay =QLabel()
         self.textDisplay.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.textDisplayInverted=QLabel()
+        self.textDisplayInverted.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.resize(800, 600)
         self.setMinimumSize(200,100)
+        self.loadedImages={}
+        self.effect = QGraphicsOpacityEffect(self.textDisplayInverted)
+        self.textDisplayInverted.setGraphicsEffect(self.effect)
+        self.effect.setOpacity(0.0)
+        self.fade_anim = QPropertyAnimation(self.effect, b"opacity", self)
+        self.fade_anim.setDuration(500)
+        self.isInv=False
+        self.setStyleSheet("background-color: black")
+
     def MediaEnd(self,status):
         if status==QMediaPlayer.MediaStatus.EndOfMedia:
             if m:=self.state.media:
@@ -70,37 +90,35 @@ class MainWindow(QWidget):
             if tmp:=self.layout_.takeAt(0):
                 if tmp:= tmp.widget():
                     tmp.setParent(None)
-    def renderTitle(self,t:Title):
-        self.textDisplay.setText('<h1>'+t.title+'</h1>' # <h1/h2?>
-                                 +'<h2>'+t.subTitle+'<h2>'
-                                 )
-        self.layout_.addWidget(self.textDisplay)
-        self.textDisplay.show()
+    def defaultDisplaySet(self):
+        self.textDisplayInverted.setText(self.textDisplay.text())
+        self.layout_.addWidget(self.textDisplay,0,0)
+        self.layout_.addWidget(self.textDisplayInverted,0,0)
         self.adjustBorders()
+    def renderTitle(self,t:Title):
+        self.textDisplay.setText('<h1>'+t.title+'</h1>'+'<h2>'+t.subTitle+'<h2>')
+        self.defaultDisplaySet()
         self.adjustFontSize()
         self.handleInvert()
     def renderImage(self,image:Image):
+        if not image.path in self.loadedImages:
+            self.loadedImages[image.path]=DisplayImage(image)
         self.textDisplay.setText("")
-        #self.textDisplay.setPixmap(QPixmap(image.path))
-        self.layout_.addWidget(self.textDisplay)
-        self.textDisplay.show()
-        self.adjustBorders()
-        self.adjustImgSize(image)
-        pass
+        self.defaultDisplaySet()
+        if image.path:
+            self.adjustImgSize(image)
+        self.handleInvert()
     def adjustImgSize(self,image:Image):
         m=self.state.margins
         wMax=int(self.width()*1*(1-m.left-m.right))
         hMax=int(self.height()*1*(1-m.top-m.bottom))
-        self.textDisplay.setPixmap(QPixmap(image.path).scaled(wMax,hMax,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
-
-
+        self.textDisplay.setPixmap(self.loadedImages[image.path].img.scaled(wMax,hMax,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        self.textDisplayInverted.setPixmap(self.loadedImages[image.path].invImg.scaled(wMax,hMax,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
     def renderVerse(self,verse:str):
         verse=verse.strip()
         verse=verse.replace('\n','<br/>')
-        self.textDisplay.show()
-        self.layout_.addWidget(self.textDisplay)
         self.textDisplay.setText(verse)
-        self.adjustBorders()
+        self.defaultDisplaySet()
         self.adjustFontSize()
         self.handleInvert()
     def handleMedia(self,event:MEvent):
@@ -158,9 +176,14 @@ class MainWindow(QWidget):
     def handleInvert(self):
         backgroundColor="white"
         textColor="black"
-        if self.state._opts.inversion:
-            backgroundColor,textColor=textColor,backgroundColor
         self.textDisplay.setStyleSheet("background-color: "+backgroundColor+"; color: "+textColor+";")
+        self.textDisplayInverted.setStyleSheet("background-color: "+textColor+"; color: "+backgroundColor+";")
+        if self.state._opts.inversion != self.isInv:
+            self.isInv =self.state._opts.inversion
+            self.fade_anim.stop()
+            self.fade_anim.setStartValue(self.effect.opacity())
+            self.fade_anim.setEndValue(1.0 if self.isInv else 0)
+            self.fade_anim.start()
     def resizeEvent(self, a0):
         s=self.state.getBonnomState()
         if isinstance(s,SongState):
@@ -186,3 +209,4 @@ class MainWindow(QWidget):
                  high=mid-1
         font.setPointSize(low)
         self.textDisplay.setFont(font)
+        self.textDisplayInverted.setFont(font)

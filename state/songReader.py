@@ -12,15 +12,16 @@ def readSong(path:str,nextID:int)->Song:
 def readSongs(path:str)->dict[int,Song]:
     res :list[Song]=[]
     was=set()
-    for file in os.listdir(path+"/custom"):
-        file=(path+"custom/")+file
-        if file.endswith(".json"):
-            try:
-                res+=[readSong(file,len(res))]
-                for t in res[-1].titles:
-                    was.add(t)
-            except Exception as e:
-                print(e)
+    if os.path.isdir(path+"/custom"):
+        for file in os.listdir(path+"/custom"):
+            file=(path+"custom/")+file
+            if file.endswith(".json"):
+                try:
+                    res+=[readSong(file,len(res))]
+                    for t in res[-1].titles:
+                        was.add(t)
+                except Exception as e:
+                    print(e)
     #res+=[Song(["---SEPARATOR---"],[],"")]
     for file in os.listdir(path+"/default"):
         file=(path+"default/")+file

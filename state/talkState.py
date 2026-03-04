@@ -33,7 +33,7 @@ class TalkState(custumState.CustumState):
         else: 
             t0=ts
         if t.pictures:
-            cons+=[lambda x: imgState.ImageState(x,x.findImg(i)) for i in t.pictures]
+            cons+=[lambda x, img=i: imgState.ImageState(x,x.findImg(img)) for i in t.pictures]
             cons.append(makeTS(t._id))
         if s:=t0.findSong(t.musicSong):
             cons.append(lambda x: SongState(x,x.topState.getSong(s._id)) )

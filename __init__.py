@@ -14,7 +14,10 @@ c=conf.readConfig()
 conf.writeConfig(c)
 app = QApplication(sys.argv)
 bridge=QtBridge()
-musics=os.listdir(c.musicDir)
+if os.path.isdir(c.musicDir):
+    musics=os.listdir(c.musicDir)
+else:
+    musics=[]
 #TODO: load thoings properly
 songs=readSongs(c.songDir)
 templates=readTemplates(c.templateDir)

@@ -33,15 +33,16 @@ def readTemplates(path:str)->dict[int,Template]:
     res :dict[int,Template]={}
     was=set()
     path.strip()
-    for file in os.listdir(path+"/custom"):
-        file=(path+"custom/")+file
-        if file.endswith(".json"):
-            try:
-                res[len(res)]=readTemplate(file,len(res))
-                for t in res[-1].titles:
-                    was.add(t)
-            except Exception as e:
-                print(e)
+    if os.path.isdir(path+"/custom"):
+        for file in os.listdir(path+"/custom"):
+            file=(path+"custom/")+file
+            if file.endswith(".json"):
+                try:
+                    res[len(res)]=readTemplate(file,len(res))
+                    for t in res[-1].titles:
+                        was.add(t)
+                except Exception as e:
+                    print(e)
     #res+=[Song(["---SEPARATOR---"],[],"")]
     for file in os.listdir(path+"/default"):
         file=(path+"default/")+file

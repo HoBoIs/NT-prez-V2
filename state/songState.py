@@ -5,9 +5,9 @@ from state.image import Image
 import state.state as state
 
 class SongState(state.State):
-    actual :Song =Song([],[])
+    actual :Song
     verseIdx: int = 0
-    def __init__(self,tw,song,verseIdx=0):
+    def __init__(self,tw,song:Song,verseIdx=0):
         self.actual=song
         self.verseIdx=verseIdx
         super().__init__(tw)
@@ -33,7 +33,7 @@ class SongListState(state.State):
     SongIdx:int=0
     atEnd=False
     inSong=True
-    def __init__(self,ts,songs,idx=0,verseIdx=0):
+    def __init__(self,ts,songs:list[Song],idx=0,verseIdx=0):
         super().__init__(ts)
         self.inSong=True
         self.songs=songs

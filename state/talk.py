@@ -11,6 +11,7 @@ class Talk:
     thanks: tuple[Template,list[str]]
     pictures:list[str] 
     musicSong : str | None
+    _id:int
 
 import json
 def readTalks(path:str,templates:list[Template]):
@@ -18,7 +19,7 @@ def readTalks(path:str,templates:list[Template]):
     with open(path) as f:
         d=json.load(f)
         for data in d:
-            t0=Template([],[],[])
+            t0=Template([],[],[],-1)
             for t in templates:
                 if data['thanks']["title"] in t.titles:
                     t0=t
@@ -29,7 +30,7 @@ def readTalks(path:str,templates:list[Template]):
                 isMusic=not data['isVideo'],
                 pictures=data['images'],
                 thanks=(t0,data["thanks"]["names"]),
+                _id=len(res),
                 musicSong= data['TextOfMusic'] if 'TextOfMusic' in data else None
             ))
-    print(templates)
-    return res
+    return {x._id:x for x in res}

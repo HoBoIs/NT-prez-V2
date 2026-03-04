@@ -5,4 +5,5 @@ from dataclasses import dataclass
 class Song:
     titles:list[str]
     verses:list[str]
+    _id:int
 

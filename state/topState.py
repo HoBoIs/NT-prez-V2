@@ -36,10 +36,10 @@ class MediaInfo:
 
 @dataclass
 class dataContainer:
-    songs:list[Song]
-    talks:list[Talk]
+    songs:dict[int,Song]
+    talks:dict[int,Talk]
     musics:list[str]
-    templstes : list[Template] 
+    templstes : dict[int,Template] 
     images:list[Image]
     imagesAfterSongs:list[Image]
     imagesBeforeSongs:list[Image]
@@ -59,6 +59,12 @@ class TopState:
     media:MediaInfo | None=None
     _opts = options()
     _m_info=mediainfo.mediaInfo()
+    def getSong(self,i:int):
+        return self.data.songs[i]
+    def getTalk(self,i:int):
+        return self.data.talks[i]
+    def getTemplate(self,i:int):
+        return self.data.templstes[i]
     def __init__(self,data:dataContainer,c:conf.Config):
         self._state=state.State(self )
         self.data=data
@@ -74,7 +80,7 @@ class TopState:
     def findSong(self,title:str| None,matchFn:Callable[[str,str],bool]=lambda x,y: x==y):
         if title==None:
             return None
-        for s in self.data.songs:
+        for s in self.data.songs.values():
             for t in s.titles:
                 if matchFn(t,title):
                     return s

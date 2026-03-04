@@ -8,6 +8,7 @@ from state.template import Template, makeSongChecked
 import state.titleState as tlState
 import state.custumState as custumState
 import state.imageState as imgState
+from typing import Callable
 #from state.song import Song
 
 class TalkState(custumState.CustumState):
@@ -20,30 +21,39 @@ class TalkState(custumState.CustumState):
             self.topState=ts
         else:
             self.topState=ts.topState
-        l:list[State]=[tlState.TitleState(self,tlState.Title(t.title,t.name))]
+        cons:list[custumState.StateMaker]=[]
+        def makeTS(_id:int):
+            def foo(p:State):
+                tmp=p.topState.getTalk(_id)
+                return tlState.TitleState(p, tlState.Title(tmp.title,tmp.name))
+            return foo
+        cons.append(makeTS(t._id))
         if not isinstance(ts,topState.TopState):
             t0=ts.topState
         else: 
             t0=ts
         if t.pictures:
-            l+=[imgState.ImageState(self,t0.findImg(i)) for i in t.pictures]
-            l+=[tlState.TitleState(self,tlState.Title(t.title,t.name))]
+            cons+=[lambda x: imgState.ImageState(x,x.findImg(i)) for i in t.pictures]
+            cons.append(makeTS(t._id))
         if s:=t0.findSong(t.musicSong):
-            l+=[SongState(self,s)]
+            cons.append(lambda x: SongState(x,x.topState.getSong(s._id)) )
         m=custumState.MediaDescript(t.isMusic,t.mediaPath,self.toThanks,self)
-        self.thxIdx=-1
-        if s:=makeSongChecked(t.thanks[0],[t.thanks[1]]):
-            if s.verses:
-                self.thxIdx=len(l)
-                l+=[SongState(self,s)]
-        super().__init__(ts,l,m)
+        self.thxIdx=len(cons)
+        def makeThx(_id:int):
+            def foo(p:State):
+                tmp=p.topState.getTalk(_id)
+                return  SongState(p, makeSongChecked(tmp.thanks[0],[tmp.thanks[1]]))
+            return foo
+        cons.append(makeThx(t._id))
+        super().__init__(ts,cons,m)
         print(self.talk)
         self.kind="TalkState"
     def toThanks(self):
-        if self.thxIdx==-1:
+        tmp=self.constructors[self.thxIdx](self)
+        if isinstance(tmp,SongState) and tmp.actual.verses==[]:
             return
         self.idx=self.thxIdx
-        self.childState=self.substates[self.idx]
+        self.childState=tmp
     def print(self):
         return super().print()
 

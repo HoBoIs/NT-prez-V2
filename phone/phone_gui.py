@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from re import T
 from flask import Flask,request,render_template
 from flask_socketio import SocketIO, emit
 import json
@@ -35,8 +34,8 @@ class ComState:
     music:list[dict[str,str]]
     templates:list[dict[str,str]]
     def refreshFromState(self,st:topState.TopState):
-        self.songs=[transformSong(s) for s in st.data.songs]
-        self.talks=[transformTalk(s) for s in st.data.talks]
+        self.songs=[transformSong(s) for s in st.data.songs.values()]
+        self.talks=[transformTalk(s) for s in st.data.talks.values()]
         self.musics=[transformMusic(s) for s in st.data.musics]
 state : topState.TopState
 lstate: ComState
@@ -224,7 +223,7 @@ def sendsong(data):
         if lstate.songs[pres_idx]['text']!=pres_txt:
             sendSongs()
             return
-        state._state=SongListState(state,state.data.songs,pres_idx,data["verseIdx"])
+        state._state=SongListState(state,list(state.data.songs.values()),pres_idx,data["verseIdx"])
         emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         #print(state._state.childState)
         bridge.stateUpdated.emit()

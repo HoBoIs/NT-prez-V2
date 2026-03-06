@@ -3,14 +3,19 @@ from dataclasses import dataclass,field
 from state.template import Template
 
 @dataclass
+class TalkMedia:
+    path:str
+    isMusic: bool
+    musicSong : str | None
+    autoPlay: bool
+
+@dataclass
 class Talk:
     title:str
     name:str
-    mediaPath:str
-    isMusic: bool
+    media:TalkMedia
     thanks: tuple[Template,list[str]]
     pictures:list[str] 
-    musicSong : str | None
     _id:int
 
 import json
@@ -23,14 +28,18 @@ def readTalks(path:str,templates:list[Template]):
             for t in templates:
                 if data['thanks']["title"] in t.titles:
                     t0=t
+            d=data["media"]
+            m=TalkMedia(
+                    path=("./res/videos/" if data['isVideo'] else "./res/talkmusic/")+d["path"],
+                    isMusic=not d["isVideo"],
+                    musicSong=d["song"],
+                    autoPlay=d["autoPlay"])
             res.append( Talk (
                 title=data['title'],
                 name=data['name'],
-                mediaPath=("./res/videos/" if data['isVideo'] else "./res/talkmusic/")+data['music'],
-                isMusic=not data['isVideo'],
+                media=m,
                 pictures=data['images'],
                 thanks=(t0,data["thanks"]["names"]),
                 _id=len(res),
-                musicSong= data['TextOfMusic'] if 'TextOfMusic' in data else None
             ))
     return {x._id:x for x in res}

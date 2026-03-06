@@ -35,9 +35,10 @@ class TalkState(custumState.CustumState):
         if t.pictures:
             cons+=[lambda x, img=i: imgState.ImageState(x,x.findImg(img)) for i in t.pictures]
             cons.append(makeTS(t._id))
-        if s:=t0.findSong(t.musicSong):
+        tmp=t.media
+        if s:=t0.findSong(t.media.musicSong):
             cons.append(lambda x: SongState(x,x.topState.getSong(s._id)) )
-        m=custumState.MediaDescript(t.isMusic,t.mediaPath,self.toThanks,self)
+        m=custumState.MediaDescript(tmp.isMusic,tmp.path,self.toThanks if tmp.autoPlay else lambda :0,self)
         self.thxIdx=len(cons)
         def makeThx(_id:int):
             def foo(p:State):

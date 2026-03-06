@@ -393,11 +393,11 @@
   "name": "-",
   "media":{
     "path":"Keretmese_Oroszlankiraly.mp4",
-    "images": ["Feher.png"],
+    "isVideo": true,
     "song": "",
     "autoPlay": true
   },
-  "isVideo": true,
+  "images": ["Feher.png"],
   "thanks": {
     "title":"",
     "names": ["-"]
@@ -409,11 +409,11 @@
   "name": "-",
   "media":{
     "path":"Keretm_ 1.mp3",
-    "images": ["Feher.png"],
+    "isVideo": false,
     "song": "",
     "autoPlay": true
   },
-  "isVideo": false,
+  "images": ["Feher.png"],
   "thanks": {
     "title":"",
     "names": ["-"]

@@ -29,8 +29,9 @@ def readTalks(path:str,templates:list[Template]):
                 if data['thanks']["title"] in t.titles:
                     t0=t
             d=data["media"]
+            print(d)
             m=TalkMedia(
-                    path=("./res/videos/" if data['isVideo'] else "./res/talkmusic/")+d["path"],
+                    path=("./res/videos/" if d['isVideo'] else "./res/talkmusic/")+d["path"],
                     isMusic=not d["isVideo"],
                     musicSong=d["song"],
                     autoPlay=d["autoPlay"])

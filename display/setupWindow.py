@@ -2,7 +2,7 @@ from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QCompleter, QGridLayout, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget, QLabel
 from state.topState import TopState, dataContainer
 from display.utils import DragHandle,ReorderContainer,SaveBtns,NoWheelComboBox
-from display.talkEdit import TalkEdit
+from display.talkEdit import TalkEdit, TalkListEdit
 from state.config import Config
 from PyQt6.QtCore import QSortFilterProxyModel, QStringListModel, Qt
 import unicodedata
@@ -180,12 +180,7 @@ class SetupWindow(QWidget):
         self.setLayout(self.layout_)
         self.items=[]
         i=0
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-
-        self.container = ReorderContainer()
-        scroll.setWidget(self.container)
-        self.layout_.addWidget(scroll,0,0)
+        self.layout_.addWidget(TalkListEdit(self,s),0,0)
         #soe=ItemEdit(s.data,self.state.cfg)
         self.so=SongOrderEditor(s.data,self.state.cfg)
         scroll2 = QScrollArea()
@@ -193,8 +188,8 @@ class SetupWindow(QWidget):
         scroll2.setWidget(self.so)
         
         self.layout_.addWidget(scroll2,0,1)
-        for t in s.data.talks.values():
-            self.container.addWidget(TalkEdit(t,s.data,self.state.cfg))
+        #for t in s.data.talks.values():
+        #    self.container.addWidget(TalkEdit(t,s.data,self.state.cfg))
             
             #self.layout_.addWidget(self.items[-1],i,0)
             #i+=1

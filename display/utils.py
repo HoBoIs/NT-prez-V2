@@ -38,6 +38,7 @@ class NoWheelComboBox(QComboBox):
 class ReorderContainer(QWidget):
     layout_:QVBoxLayout
     draggedWidget:None|QWidget
+    last:QWidget | None
     def __init__(self):
         super().__init__()
         self.setAcceptDrops(True)
@@ -45,7 +46,9 @@ class ReorderContainer(QWidget):
         self.layout_.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.layout_.setContentsMargins(0,0,0,0)
         self.draggedWidget = None
-    def addWidget(self, w):
+        self.last = None
+    def addWidget(self, w:QWidget):
+        self.last=w
         self.layout_.addWidget(w)
     def dragEnterEvent(self, a0):
         if a0:
@@ -60,8 +63,8 @@ class ReorderContainer(QWidget):
         if not a0:
             return
         pos=a0.position().toPoint()
-        tIdx=self.layout_.count()
-        for i in range(self.layout_.count()):
+        tIdx=max(self.layout_.count()-2,1)
+        for i in range(1,self.layout_.count()-2):
             item= self.layout_.itemAt(i)
             if not item :
                 continue
@@ -75,6 +78,8 @@ class ReorderContainer(QWidget):
         self.layout_.insertWidget(tIdx, self.draggedWidget)
         self.draggedWidget = None
         a0.accept()
+    def isLast(self,w:QWidget):
+        return w is self.last
 
 class DragHandle(QLabel):
     def __init__(self, parent=None):
@@ -96,6 +101,8 @@ class DragHandle(QLabel):
             return
         container = widget.parentWidget()
         if not isinstance(container,ReorderContainer):
+            return
+        if container.isLast(widget):
             return
         container.draggedWidget = widget
 

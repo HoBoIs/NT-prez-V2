@@ -1,3 +1,4 @@
+from display.setupWindow import SetupWindow
 from state.songReader import readSongs
 from state.topState import TopState, dataContainer
 import state.talk as talk
@@ -24,7 +25,7 @@ templates=readTemplates(c.templateDir)
 images=image.importImages(c.imageDir,c)
 imagesBeforeSong=[i for i in images if i.path.split("/")[-1] in c.imagesBeforeSong]
 imagesAfterSong=[i for i in images if i.path.split("/")[-1] in c.imagesAfterSong]
-talks=talk.readTalks("./res/talks.json",list(templates.values()))
+talks=talk.readTalks("./res/talks.json",list(templates.values()),c.talkMediaDir)
 ds=dataContainer(
         songs=songs,
         talks=talks,
@@ -42,6 +43,8 @@ phone.phone_gui.init(ts,bridge)
 threading.Thread(target=phone.phone_gui.start, daemon=True).start()
 print("Starting QT:")
 win=mw.MainWindow(ts)
+win2=SetupWindow(ts)
 win.show()
+win2.show()
 win.addBridge((bridge))
 app.exec()

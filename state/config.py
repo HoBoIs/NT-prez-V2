@@ -15,7 +15,7 @@ class Config:
   imageDir : str
   songDir  : str
   videoDir : str
-  talkMusicDir : str
+  talkMediaDir : str
   origDir : str
   nonInvertableImages:list[str]
   templateDir : str
@@ -40,7 +40,7 @@ def readConfig():
           templateDir=origDir+data["templateDir"],
           songDir=origDir+data["songDir"],
           videoDir=origDir+data["videoDir"],
-          talkMusicDir=origDir+data["talkMusicDir"],
+          talkMediaDir=origDir+data["talkMediaDir"],
           server=data["server"],
           nonInvertableImages=data["nonInvertableImages"]
           )

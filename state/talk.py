@@ -1,5 +1,6 @@
 from dataclasses import dataclass,field
 
+from state.config import Config
 from state.template import Template
 
 @dataclass
@@ -19,7 +20,7 @@ class Talk:
     _id:int
 
 import json
-def readTalks(path:str,templates:list[Template]):
+def readTalks(path:str,templates:list[Template],dr:str):
     res:list[Talk]=[]
     with open(path) as f:
         d=json.load(f)
@@ -30,7 +31,7 @@ def readTalks(path:str,templates:list[Template]):
                     t0=t
             d=data["media"]
             m=TalkMedia(
-                    path=("./res/videos/" if d['isVideo'] else "./res/talkmusic/")+d["path"],
+                    path=(dr)+d["path"],
                     isMusic=not d["isVideo"],
                     musicSong=d["song"],
                     autoPlay=d["autoPlay"])

@@ -10,7 +10,7 @@
   "songDir"  : "./res/songs/",
   "videoDir" : "./res/videos/",
   "templateDir" : "./res/templates/",
-  "talkMusicDir" : "./res/talkmusic/",
+  "talkMediaDir" : "./res/talkMedia/",
   "server":true,
   "nonInvertableImages" : []
 }

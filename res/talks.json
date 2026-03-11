@@ -2,7 +2,7 @@
   "title": "Bemutatkozás",
   "name": "M. Julcsi & Andris",
   "media": {
-    "path":"Keretmese_Oroszlankiraly.mp4",
+    "path":"blue.mp4",
     "isVideo": true,
     "song": "",
     "autoPlay": true
@@ -18,7 +18,7 @@
   "title": "Isten hívása",
   "name": "V. Emese",
   "media":{
-    "path":"short.wav",
+    "path":"test.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -131,7 +131,7 @@
   "title": "Kiengesztelődés",
   "name": "Marci",
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -163,7 +163,7 @@
   "title": "Egyház a világban",
   "name": "W. Júlia & Domi",
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -230,7 +230,7 @@
   "title": "Igyatok sokat!",
   "name": "De tényleg... Tea, víz, stb.",
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -246,7 +246,7 @@
   "title": "Ittál ma már eleget?",
   "name": "Biztos?",
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -263,7 +263,7 @@
   "name": "-",
   "images": ["polominta_light_aranyok.png"],
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -279,7 +279,7 @@
   "name": "",
   "images": ["lovegun.jpg"],
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -295,7 +295,7 @@
   "name": "Üres dia",
   "images": ["Feher.png"],
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -311,7 +311,7 @@
   "title": "Lovegun Szalai",
   "name": "",
   "media":{
-    "path":"-",
+    "path":"",
     "isVideo": false,
     "song": "",
     "autoPlay": true

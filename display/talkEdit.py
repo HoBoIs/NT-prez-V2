@@ -1,6 +1,6 @@
 from typing import Callable
 import os
-from PyQt6.QtWidgets import QCheckBox,  QGridLayout, QLabel, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QCheckBox, QFrame,  QGridLayout, QLabel, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget
 from PyQt6.QtCore import QTimer, Qt
 from state.config import Config
 from state.talk import Talk, TalkMedia
@@ -194,7 +194,7 @@ class ThxChooser():
         return (t,names)
 
 
-class TalkEdit(QWidget):
+class TalkEdit(QFrame):
     layout_: QGridLayout
     handle: DragHandle
     titleIn: QLineEdit
@@ -214,6 +214,9 @@ class TalkEdit(QWidget):
         self.data=data
         self.oldTalk=t
         self.container=QWidget()
+        self.setFrameShape(QFrame.Shape.Box)
+        self.setFrameShadow(QFrame.Shadow.Raised)
+        self.setLineWidth(2)
         self.layout_=QGridLayout(self.container)
         self.setLayout(self.layout_)
         #self.layout_.setHorizontalSpacing(0)

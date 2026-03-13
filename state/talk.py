@@ -18,7 +18,10 @@ class Talk:
     thanks: tuple[Template,list[str]]
     pictures:list[str] 
     _id:int
+    orderIDX:int
 
+def makeFakeTalk()->Talk:
+    return Talk("","",TalkMedia("",True,"",True),(Template([],[],[],-1),[]),[],-1,-1 )
 import json
 def readTalks(path:str,templates:list[Template],dr:str):
     res:list[Talk]=[]
@@ -42,5 +45,6 @@ def readTalks(path:str,templates:list[Template],dr:str):
                 pictures=data['images'],
                 thanks=(t0,data["thanks"]["names"]),
                 _id=len(res),
+                orderIDX=len(res)
             ))
     return {x._id:x for x in res}

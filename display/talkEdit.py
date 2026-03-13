@@ -3,12 +3,12 @@ import os
 from PyQt6.QtWidgets import QCheckBox, QFrame,  QGridLayout, QLabel, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget
 from PyQt6.QtCore import QTimer, Qt
 from state.config import Config
-from state.talk import Talk, TalkMedia
+from state.talk import Talk, TalkMedia, makeFakeTalk
 from state.template import Template
 from state.topState import TopState, dataContainer
 from PyQt6.QtWidgets import QSizePolicy
 from display.mediaType import detectMediaType
-from display.utils import DragHandle,ReorderContainer,NoWheelComboBox,SaveBtns
+from display.utils import DragHandle, ListEditHless,ListEdit, ListItem,ReorderContainer,NoWheelComboBox,SaveBtns
 
 
 class RollableListEditor(QWidget):
@@ -50,6 +50,15 @@ class RollableListEditor(QWidget):
         self.scrollA.setFrameShape(QScrollArea.Shape.NoFrame)
         #for im in selectedImg:
         #    self.contents[-1].setCurrentText(im)
+    def setImages(self,selectedImg):
+        self.removeBoxes()
+        for im in selectedImg:
+            self.addBox(im)
+        self.addBox()
+    def removeBoxes(self):
+        for s in self.contents:
+            self.layout_.removeWidget(s)
+        self.contents=[]
     def addBox(self,s:str=""):
         self.contents.append(NoWheelComboBox())
         self.contents[-1].addItems([""])
@@ -85,8 +94,10 @@ class MediaEditor(QWidget):
     chb: QCheckBox
     special:QPushButton
     mediaDir:str
+    paths:list[str]
     def __init__(self,l:QGridLayout, col:int, paths:list[str], selected:TalkMedia,updater:Callable):
         super().__init__()
+        self.paths=paths
         self.layout_=l
         self.col=col
         self.chooser=NoWheelComboBox()
@@ -106,6 +117,12 @@ class MediaEditor(QWidget):
         self.layout_.addWidget(self.special,1,col+1)
         self.chooser.currentIndexChanged.connect(updater)
         self.chb.stateChanged.connect(updater)
+    def set(self,selected:TalkMedia):
+        s=selected.path.split("/")[-1]
+        if selected.path and s in self.paths:
+            self.chooser.setCurrentText(s)
+        if selected.autoPlay:
+            self.chb.setChecked(True)
 
     def getMedia(self):
         path=self.mediaDir+self.chooser.currentText()
@@ -139,18 +156,18 @@ class ThxChooser():
         #self.layout_=QGridLayout(self)
         #self.setLayout(self.layout_)
         self.col=col
+        self.oldT=t
         self.layout_=l
         self.templates=ts
         self.typeIn=NoWheelComboBox()
         self.typeIn.setMinimumWidth(20)
         self.typeIn.addItems(["Nincs"])
-        self.typeIn.addItems([t.titles[0] for t in ts])
+        self.typeIn.addItems([ta.titles[0] for ta in ts])
         self.nameMemory=["",""]
         for i,t0 in enumerate(ts):
             if t[0]==t0:
                 self.typeIn.setCurrentIndex(i+1)
         names=t[1]
-        self.oldT=t
         if self.oldT[0].params:
             while len(names)<self.oldT[0].params[0]:
                 names.append("")
@@ -166,6 +183,15 @@ class ThxChooser():
                 )
         self.updater=updater
         self.typeIn.currentIndexChanged.connect(updater)
+    def initFields(self,t:tuple[Template,list[str]]):
+        for i,t0 in enumerate(self.templates):
+            if t[0]==t0:
+                self.typeIn.setCurrentIndex(i+1)
+        names=t[1]
+        self.nameMemory=(names+["",""])[:2]
+        for i in range(len(self.nameIns)):
+            self.nameIns[i].setText(self.nameMemory[i])
+
 
     def onChangedBox(self):
         cnt=0
@@ -194,9 +220,7 @@ class ThxChooser():
         return (t,names)
 
 
-class TalkEdit(QFrame):
-    layout_: QGridLayout
-    handle: DragHandle
+class TalkEdit(ListItem):
     titleIn: QLineEdit
     name1In: QLineEdit
     name2In: QLineEdit
@@ -204,47 +228,34 @@ class TalkEdit(QFrame):
     imagesIn: RollableListEditor
     #imagesIn: DynamicComboWidget
     mediaIn: MediaEditor
-    saver : SaveBtns
-    changed: bool
     oldTalk:Talk
-    container: QWidget
     data:dataContainer
     def __init__(self, t:Talk,data:dataContainer, conf:Config):
         super().__init__()
         self.data=data
         self.oldTalk=t
-        self.container=QWidget()
-        self.setFrameShape(QFrame.Shape.Box)
-        self.setFrameShadow(QFrame.Shadow.Raised)
-        self.setLineWidth(2)
-        self.layout_=QGridLayout(self.container)
-        self.setLayout(self.layout_)
         #self.layout_.setHorizontalSpacing(0)
         for i,w in enumerate([1,3,2,2,2,4,3,1,2]):
             self.layout_.setColumnStretch(i,w)
-        self.handle=DragHandle()
         self.layout_.addWidget(self.handle,0,0,2,1)
-        self.titleIn=QLineEdit(t.title)
+        self.titleIn=QLineEdit()
         self.layout_.addWidget(self.titleIn,0,1)
-        names=t.name.split('&')
-        if len(names) == 1:
-            names.append("")
-        self.name1In=QLineEdit(names[0].strip())
-        self.name2In=QLineEdit(names[1].strip())
+        self.name1In=QLineEdit()
+        self.name2In=QLineEdit()
         self.layout_.addWidget(self.name1In,0,2)
         self.layout_.addWidget(self.name2In,1,2)
-        self.thxIn=ThxChooser(t.thanks,self.layout_,3,list(data.templstes.values()),self.updateSaveBtns)
+        self.thxIn=ThxChooser(t.thanks,self.layout_,3,list(data.templstes.values()),self.onChange)
         self.imagesIn=RollableListEditor(
                 [d.path.split('/')[-1] for d in data.images],
                 t.pictures,
-                self.updateSaveBtns) #t.pictures
+                self.onChange) #t.pictures
         self.layout_.addWidget(self.imagesIn,0,5,2,1)
-        self.mediaIn=MediaEditor(self.layout_,6,os.listdir(conf.talkMediaDir),t.media,self.updateSaveBtns) #t.mediaPath, t.musicSong
-        self.saver=SaveBtns()
+        self.mediaIn=MediaEditor(self.layout_,6,os.listdir(conf.talkMediaDir),t.media,self.onChange) #t.mediaPath, t.musicSong
         self.layout_.addWidget(self.saver,0,8,2,1)
-        self.titleIn.textEdited.connect(self.updateSaveBtns)
-        self.name1In.textEdited.connect(self.updateSaveBtns)
-        self.name2In.textEdited.connect(self.updateSaveBtns)
+        self.titleIn.textEdited.connect(self.onChange)
+        self.name1In.textEdited.connect(self.onChange)
+        self.name2In.textEdited.connect(self.onChange)
+        self.initFields()
     def getTalk(self):
         n1=self.name1In.text().strip()
         n2=self.name2In.text().strip()
@@ -254,15 +265,43 @@ class TalkEdit(QFrame):
             thanks=self.thxIn.getThx(),
             media=self.mediaIn.getMedia(),
             pictures=self.imagesIn.getImages(),
-            _id=self.oldTalk._id
+            _id=self.oldTalk._id,
+            orderIDX=self.oldTalk.orderIDX
         )
-    def isChanged(self):
-        return self.oldTalk!=self.getTalk()
-    def updateSaveBtns(self):
-        self.saver.setChanged(self.isChanged())
-        print(type(self.parent()))
-        if isinstance(self.parent(),TalkListEdit):
-            print("LAST")
+    def initFields(self):
+        self.titleIn.setText(self.oldTalk.title)
+        names=self.oldTalk.name.split('&')
+        if len(names) == 1:
+            names.append("")
+        self.name1In.setText(names[0].strip())
+        self.name2In.setText(names[1].strip())
+        self.thxIn.initFields(self.oldTalk.thanks)
+        self.imagesIn.setImages(self.oldTalk.pictures)
+        self.mediaIn.set(self.oldTalk.media)
+    def isChanged(self)->bool:
+        tmp=self.getTalk()
+        tmp._id=self.oldTalk._id
+        tmp.orderIDX=self.oldTalk.orderIDX
+        return self.oldTalk!=tmp
+    def getID(self) -> int:
+        return self.oldTalk._id
+    def setID(self,v):
+        self.oldTalk._id=v
+    def onChange(self):
+        self.updateSaveBtns()
+        self.onChangedData.emit()
+    def setOrder(self, v: int) -> None:
+        self.oldTalk.orderIDX=v
+    def save(self):
+        newTalk=self.getTalk()
+        self.data.talks[self.oldTalk._id]=newTalk
+        self.oldTalk=newTalk
+        self.onChange()
+    def cancelEdit(self):
+        self.initFields()
+        self.onChange()
+
+
 class TalkHeader(QWidget):
     layout_: QGridLayout
     def __init__(self):
@@ -278,20 +317,14 @@ class TalkHeader(QWidget):
         self.layout_.addWidget(QLabel("Köszönöjük"),0,3,1,2)
         self.layout_.addWidget(QLabel("Képek"),0,5)
         self.layout_.addWidget(QLabel("Bev. utáni zene/videó"),0,6)
-        self.layout_.addWidget(SaveBtns(),0,8)
+        self.layout_.addWidget(QLabel("SAVE"),0,8)
+        #self.layout_.addWidget(SaveBtns(),0,8)
 
-class TalkListEdit(QScrollArea):
-    container : ReorderContainer
+
+class TalkListEdit(ListEdit):
     state:TopState
-    last:TalkEdit
-    def __init__(self, parent: QWidget | None ,s:TopState ) -> None:
-        super().__init__(parent)
+    def __init__(self, parent: QWidget|None, s:TopState) :
         self.state=s
-        self.setWidgetResizable(True)
-        self.container = ReorderContainer()
-        self.setWidget(self.container)
-        self.container.addWidget(TalkHeader())
-        for t in s.data.talks.values():
-            self.container.addWidget(TalkEdit(t,s.data,s.cfg))
-        self.last=TalkEdit(Talk("","",TalkMedia("",False,None,True),(Template([],[],[],-1),[]),[],-1 ) ,s.data,s.cfg)
-        self.container.addWidget(self.last)
+        super().__init__(parent,TalkHeader(),
+                         ListEditHless(None,[TalkEdit(t,s.data,s.cfg) for t in s.data.talks.values()],
+                                       lambda: TalkEdit(makeFakeTalk()  ,s.data,s.cfg)))

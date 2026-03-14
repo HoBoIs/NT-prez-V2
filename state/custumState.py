@@ -86,4 +86,9 @@ class CustumState(state.State):
     def print(self):
         print(self.idx)
         return super().print()
+    def setIndex(self, idx: int):
+        if idx==-1:
+            idx+=len(self.constructors)
+        self.idx=idx
+        self.childState=self.constructors[idx](self)
 

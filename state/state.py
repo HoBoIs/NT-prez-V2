@@ -38,13 +38,13 @@ class State:
             return self.childState.getMedia()
         return None
     #For the phone frontend
-    def nxtPrevirw(self):
+    def nextPreview(self)->str:
         return "N/A"
-    def prevPreview(self):
+    def prevPreview(self)->str:
         return "N/A"
     def getPlayState(self):
         return (0,0)
-    def getForHighlite(self):
+    def actPreview(self)->str:
         return "N/A"
     def getType(self):
         return "N/A"
@@ -53,6 +53,8 @@ class State:
         if self.childState:
             res+=self.childState.getChain()
         return res
+    def setIndex(self,idx:int):
+        pass
     def destruct(self): 
         # destructs the state's all children. This is for avoiding memory leaks because of the circular dependencies
         if self.childState:

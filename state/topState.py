@@ -40,6 +40,7 @@ class SongOrderItem:
     cnst:"StateMaker"
     title: str
     kind:str
+    _id:int
 
 @dataclass
 class dataContainer:

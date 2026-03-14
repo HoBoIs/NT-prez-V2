@@ -1,5 +1,6 @@
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QCompleter, QGridLayout, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget, QLabel
+from display.signals import QtBridge
 from display.songOrder import SongOrderEditor
 from state.topState import TopState, dataContainer
 from display.utils import DragHandle,ReorderContainer,SaveBtns,NoWheelComboBox
@@ -27,9 +28,13 @@ class SetupWindow(QWidget):
         i=0
         self.layout_.addWidget(TalkListEdit(self,s),0,0)
         #soe=ItemEdit(s.data,self.state.cfg)
-        self.so=SongOrderEditor(None,s.data,self.state.cfg,self.state)
+        self.so=SongOrderEditor(None,s.data,self.state.cfg,self.state,self.sendUpdate)
         
         self.layout_.addWidget(self.so,0,1)
+    def addBridge(self,b:QtBridge):
+        self.bridge=b
+    def sendUpdate(self,data={}):
+        self.bridge.sendUpdate(data)
         #for t in s.data.talks.values():
         #    self.container.addWidget(TalkEdit(t,s.data,self.state.cfg))
             

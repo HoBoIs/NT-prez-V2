@@ -20,3 +20,9 @@ class TitleState(state.State):
     def print(self):
         print(self.title)
         return super().print()
+    def actPreview(self) -> str:
+        return self.title.title
+    def nextPreview(self) -> str:
+        return self.parentState.nextPreview() if self.parentState else ""
+    def prevPreview(self) -> str:
+        return self.parentState.prevPreview() if self.parentState else ""

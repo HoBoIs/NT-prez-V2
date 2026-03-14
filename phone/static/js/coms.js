@@ -45,55 +45,20 @@ function loadData(chanel,data,contID){
     }*/
   }
 }
-socket.on("songSelected", (data) =>{
-//songidx,vidx
-  var tmp
-  var nx
-  var prv
-  document.querySelectorAll(".HLT").forEach(b=>b.className="");
-  const SF=document.getElementById("SongScroll")
-  SF.children[2*data['songidx']].className="HLT"
-  const vs=SF.children[2*data['songidx']].data.verses
-  if (data['vidx']>=0 && data['vidx']<vs.length)
-    SF.children[2*data['songidx']+1].children[data['vidx']+1].className="HLT"
-  if (data['vidx']>0)
-    prv=vs[data['vidx']-1].split('\n')[0]
-  else if (data['vidx']==0)
-    prv="Dal elötti üres"
-  else {
-    if (data['songidx']==0){
-      tmp=SF.children[SF.children.length-2].data.verses
-    }else{
-      tmp=SF.children[2*(data['songidx']-1)].data.verses
-    }
-    prv=tmp[tmp.length-1].split('\n')[0]
-  }
-  if (data['vidx']<vs.length-1)
-    nx=vs[data['vidx']+1].split('\n')[0]
-  else 
-    nx="Dal utáni logó"
-  document.getElementById("PrevNote").innerText=prv
-  document.getElementById("NextNote").innerText=nx
-})
-socket.on("volume",v =>{
-  document.getElementById("volume").value=v
-})
-socket.on("Auto",v =>{
-  document.getElementById("autoplay").checked =v
-})
-socket.on("songs",songs =>{
-  //loadData("songSet", songs, "SongScroll")
-  const items = songs
-  const cont=document.getElementById("SongScroll")
-  cont.innerHTML=""
-
-  for (let i=0; i<items.length; i++){
-    const btn=document.createElement("button");
-    btn.innerHTML = "<div>"+items[i].text+"</div>";
-    btn.data = items[i]
-    btn.searchData=sanitize(btn.data.titles.join(""))+"¤"+sanitize(btn.data.verses.join(""))
+function loadTalk(cont,btn,chanel,i){
+  const text=btn.data.text
+    btn.searchData=text
     btn.onclick = () => 
-      send("songSet",{"text":items[i].text,"index":i,"verseIdx":0})
+    send(chanel,{"text":text,"index":i,"verseIdx":0})
+    cont.appendChild(btn);
+}
+function loadSong(cont,btn,chanel,idx){
+  const aaa=idx
+  const text=btn.data.text
+    btn.searchData=sanitize(btn.data.titles.join(""))+"¤"+sanitize(btn.data.verses.join(""))
+    btn.onclick = () => {
+      send(chanel,{"text":text,"index":aaa,"verseIdx":0})
+    }
     cont.appendChild(btn);
     if (btn.data!=btn.innerText){
       const subBtn=document.createElement("button");
@@ -103,11 +68,11 @@ socket.on("songs",songs =>{
       dv.appendChild(dvTop)
       dvTop.innerHTML=btn.data.titles.join('\n')
       dvTop.onclick = () => 
-        send("songSet",{"text":items[i].text,"index":i,"verseIdx":0})
+        send(chanel,{"text":text,"index":aaa,"verseIdx":0})
       for (let j=0; j<btn.data.verses.length; j+=1){
         const b=document.createElement("button")
         b.onclick=()=>
-          send("songSet",{"text":items[i].text,"index":i,"verseIdx":j})
+          send(chanel,{"text":text,"index":aaa,"verseIdx":j})
         b.innerText=btn.data.verses[j]
         dv.appendChild(b)
 
@@ -123,6 +88,76 @@ socket.on("songs",songs =>{
       btn.appendChild(subBtn)
       cont.appendChild(dv)
     }
+}
+socket.on("songSelected", (data) =>{
+//songidx,vidx
+  var tmp
+  var nx
+  var prv
+  document.querySelectorAll(".HLT").forEach(b=>b.classList.remove("HLT") );
+  const SF=document.getElementById("SongScroll")
+  SF.children[2*data['songidx']].classList.add("HLT")
+  const vs=SF.children[2*data['songidx']].data.verses
+  if (data['vidx']>=0 && data['vidx']<vs.length)
+    SF.children[2*data['songidx']+1].children[data['vidx']+1].classList.add("HLT")
+  /*if (data['vidx']>0)
+    prv=vs[data['vidx']-1].split('\n')[0]
+  else if (data['vidx']==0)
+    prv="Dal elötti üres"
+  else {
+    if (data['songidx']==0){
+      tmp=SF.children[SF.children.length-2].data.verses
+    }else{
+      tmp=SF.children[2*(data['songidx']-1)].data.verses
+    }
+    prv=tmp[tmp.length-1].split('\n')[0]
+  }
+  if (data['vidx']<vs.length-1)
+    nx=vs[data['vidx']+1].split('\n')[0]
+  else 
+    nx="Dal utáni logó"
+  document.querySelectorAll(".PrevNote").forEach(x=> x.innerText=prv)
+  document.querySelectorAll(".NextNote").forEach(x=> x.innerText=nx)
+*/})
+socket.on('previews',d=>{
+  document.querySelectorAll(".PrevNote").forEach(x=> x.innerText=d.prev)
+  document.querySelectorAll(".NextNote").forEach(x=> x.innerText=d.next)
+})
+socket.on("volume",v =>{
+  document.getElementById("volume").value=v
+})
+socket.on("Auto",v =>{
+  document.getElementById("autoplay").checked =v
+})
+
+socket.on("songOrder",songs =>{
+  console.log(songs)
+  const items = songs
+  const cont=document.getElementById("SongOrderScroll")
+  cont.innerHTML=""
+
+  for (let i=0; i<items.length; i++){
+    const btn=document.createElement("button");
+    btn.innerHTML = "<div>"+items[i].text+"</div>";
+    btn.data = items[i]
+    if (btn.data.kind=="song"){
+      loadSong(cont,btn,"songOrderSet",i)
+    }else if (btn.data.kind=="talk"){
+      loadTalk(cont,btn,"songOrderSet",i)
+    }
+  }
+})
+socket.on("songs",songs =>{
+  //loadData("songSet", songs, "SongScroll")
+  const items = songs
+  const cont=document.getElementById("SongScroll")
+  cont.innerHTML=""
+
+  for (let i=0; i<items.length; i++){
+    const btn=document.createElement("button");
+    btn.innerHTML = "<div>"+items[i].text+"</div>";
+    btn.data = items[i]
+    loadSong(cont,btn,"songSet",i )
   }
 })
 

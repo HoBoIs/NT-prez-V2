@@ -28,10 +28,10 @@ def readSongOrder(path:str,dt:dataContainer):
         kind=data["kind"]
         if kind=="song":
             _id=songDict[data["title"]]._id
-            res.append(SongOrderItem( lambda p,i=_id: SongState(p,p.topState.data.songs[i]),data["title"],kind ))
+            res.append(SongOrderItem( lambda p,i=_id: SongState(p,p.topState.data.songs[i]),data["title"],kind,_id ))
         elif kind=="talk":
-            _id=songDict[data["title"]]._id
-            res.append(SongOrderItem(lambda p,i=_id: TalkState(p,p.topState.data.talks[i]),data["title"],kind) )
+            _id=talkDict[data["title"]]._id
+            res.append(SongOrderItem(lambda p,i=_id: TalkState(p,p.topState.data.talks[i]),data["title"],kind,_id) )
     return res
 @dataclass
 class printClass:

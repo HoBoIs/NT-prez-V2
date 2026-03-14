@@ -25,6 +25,26 @@ class SongState(state.State):
     def print(self):
         print(self.verseIdx,self.actual.verses[self.verseIdx])
         return super().print()
+    def setIndex(self, idx):
+        if idx==-1:
+            idx+=len(self.actual.verses)
+        self.verseIdx=idx
+    def nextPreview(self) -> str:
+        if self.verseIdx+1 == len(self.actual.verses):
+            if self.parentState:
+                return self.parentState.nextPreview()
+            return ""
+        else:
+            return self.actual.verses[self.verseIdx+1].split("\n")[0]
+    def prevPreview(self) -> str:
+        if self.verseIdx == 0:
+            if self.parentState:
+                return self.parentState.prevPreview()
+            return ""
+        else:
+            return self.actual.verses[self.verseIdx-1].split("\n")[0]
+    def actPreview(self) -> str:
+        return self.actual.verses[self.verseIdx].split("\n")[0]
 
 from state.config import Config
 
@@ -42,11 +62,13 @@ class SongListState(state.State):
         self.atEnd=False
         self.kind="SongListState"
     def nextState(self):
+        self.atEnd=False
         if (self.childState):
             self.childState.nextState()
         else: 
             self.childState=SongState(self,song=self.songs[self.SongIdx])
     def prevState(self):
+        self.atEnd=False
         if (self.childState):
             self.childState.prevState()
         else:
@@ -56,12 +78,14 @@ class SongListState(state.State):
             s=self.songs[self.SongIdx]
             self.childState=SongState(self,song=s,verseIdx=len(s.verses)-1)
     def childEndedNxt(self):
+        self.atEnd=False
         self.inSong=not self.inSong
         if not self.inSong:
             image=Image("")
             if l:=self.topState.data.imagesAfterSongs:
                 image=l[0] #TODO choose random
             self.childState=ImageState(self,image)
+            self.atEnd=True
         else:
             self.SongIdx+=1
             if self.SongIdx==len(self.songs):
@@ -70,6 +94,7 @@ class SongListState(state.State):
 
 
     def childEndedPrev(self):
+        self.atEnd=False
         self.inSong=not self.inSong
         if not self.inSong:
             image=Image("")
@@ -84,9 +109,40 @@ class SongListState(state.State):
             self.childState=SongState(self,song=s,verseIdx=len(s.verses)-1)
         #self.childState=None
         #self.atEnd=False
+    def setIndex(self, idx:int):
+        if idx==-1:
+            idx+=len(self.songs)
+        self.SongIdx=idx
+        self.childState=SongState(self,song=self.songs[self.SongIdx])
     def print(self):
         print(self.SongIdx,self.songs[self.SongIdx].titles)
         return super().print()
+    def nextPreview(self):
+        if self.inSong:
+            return "Dal utáni Logó"
+        else:
+            newIdx=self.SongIdx + (1 if self.atEnd else 0)
+            if newIdx==len(self.songs):
+                return self.songs[0].verses[0].split('\n')[0]
+            return self.songs[newIdx].verses[0].split('\n')[0]
+    def prevPreview(self) -> str:
+        if self.inSong:
+            return "Dal elötti üres"
+        else:
+            newIdx=self.SongIdx - (0 if self.atEnd else 1)
+            if newIdx==len(self.songs):
+                return self.songs[0].verses[-1].split('\n')[0]
+            return self.songs[newIdx].verses[-1].split('\n')[0]
+    def actPreview(self) -> str:
+        if self.inSong:
+            return "N/A"#unreachable
+        else:
+            if self.atEnd:
+                return "Dal utáni Logó"
+            return "Dal elötti üres"
+
+
+        
 
     """def render(self):
         if (self.childState):

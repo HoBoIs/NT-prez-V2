@@ -57,5 +57,29 @@ class TalkState(custumState.CustumState):
         self.childState=tmp
     def print(self):
         return super().print()
-
-
+    def nextPreview(self) -> str:
+        toFind=self.idx+1
+        if toFind>=len(self.constructors): 
+            if not self.parentState:
+                return ""
+            return self.parentState.nextPreview()
+        return self.findPreview(toFind)
+    def prevPreview(self) -> str:
+        toFind=self.idx-1
+        if toFind==-1:
+            if not self.parentState:
+                return ""
+            return self.parentState.prevPreview()
+        return self.findPreview(toFind)
+    def findPreview(self,idx:int)->str:
+        if idx==0:
+            return self.talk.title
+        if idx<=len(self.talk.pictures):
+            return self.talk.pictures[idx-1]
+        if idx>1 and idx==len(self.talk.pictures)+1:
+            return self.talk.title
+        if idx==self.thxIdx:
+            return self.talk.thanks[0].titles[0]+" "+",".join(self.talk.thanks[1])
+        return ""
+    def actPreview(self) -> str:
+        return self.findPreview(self.idx)

@@ -220,7 +220,8 @@ class SongOrderEditor(ListEdit):
     conf:Config
     ls:list[ItemEdit]
     ts:TopState
-    def __init__(self,parent,d:dataContainer,c:Config,s:TopState):
+    os:Callable
+    def __init__(self,parent,d:dataContainer,c:Config,s:TopState, onSave:Callable):
         self.data=d
         self.ts=s
         self.conf=c
@@ -228,10 +229,17 @@ class SongOrderEditor(ListEdit):
         super().__init__(parent,Header(),
                          ListEditHless(None,self.ls,lambda: ItemEdit(self.data,self.conf,self.writeToState)
                          ))
+        self.os=onSave
         
     def writeToState(self):
         res=[(s.getConstructor(),s.getItem()[1]) for s in self.ls]
         #for i,s in enumerate(self.ls):
         #    res+=[s.getConstructor()]
-        self.data.songOrder=[SongOrderItem (r[0],getTitle(r[1]),getKindName(r[1])) for r in res if r[0]and r[1]]
+        with self.ts._lock:
+            self.data.songOrder=[SongOrderItem (r[0],getTitle(r[1]),getKindName(r[1]),r[1]._id) for r in res if r[0]and r[1]]
+        #p=self.parent()
+        #from display.setupWindow import SetupWindow
+        #if isinstance(p,SetupWindow):
+        #    p.sendUpdate()
+        self.os()
         writeSongOrder("./res/songOrder.json",self.data.songOrder)

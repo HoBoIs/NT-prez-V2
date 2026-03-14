@@ -230,8 +230,10 @@ class TalkEdit(ListItem):
     mediaIn: MediaEditor
     oldTalk:Talk
     data:dataContainer
-    def __init__(self, t:Talk,data:dataContainer, conf:Config):
+    oss:Callable
+    def __init__(self, t:Talk,data:dataContainer, conf:Config,onSaveState:Callable):
         super().__init__()
+        self.oss=onSaveState
         self.data=data
         self.oldTalk=t
         #self.layout_.setHorizontalSpacing(0)
@@ -297,6 +299,7 @@ class TalkEdit(ListItem):
         self.data.talks[self.oldTalk._id]=newTalk
         self.oldTalk=newTalk
         self.onChange()
+        self.oss()
     def cancelEdit(self):
         self.initFields()
         self.onChange()
@@ -323,8 +326,10 @@ class TalkHeader(QWidget):
 
 class TalkListEdit(ListEdit):
     state:TopState
-    def __init__(self, parent: QWidget|None, s:TopState) :
+    os:Callable
+    def __init__(self, parent: QWidget|None, s:TopState,c:Callable) :
         self.state=s
+        self.os=c
         super().__init__(parent,TalkHeader(),
-                         ListEditHless(None,[TalkEdit(t,s.data,s.cfg) for t in s.data.talks.values()],
-                                       lambda: TalkEdit(makeFakeTalk()  ,s.data,s.cfg)))
+                         ListEditHless(None,[TalkEdit(t,s.data,s.cfg,c) for t in s.data.talks.values()],
+                                       lambda: TalkEdit(makeFakeTalk()  ,s.data,s.cfg,c)))

@@ -3,6 +3,7 @@ from threading import Lock
 from typing import Callable
 from state.image import Image
 from state.song import Song
+from state.songState import SongState
 from state.talk import Talk
 import state.state as state
 import state.mediainfo as mediainfo
@@ -35,6 +36,12 @@ class MediaInfo:
     age:float
 
 @dataclass
+class SongOrderItem:
+    cnst:"StateMaker"
+    title: str
+    kind:str
+
+@dataclass
 class dataContainer:
     songs:dict[int,Song]
     talks:dict[int,Talk]
@@ -43,6 +50,8 @@ class dataContainer:
     images:list[Image]
     imagesAfterSongs:list[Image]
     imagesBeforeSongs:list[Image]
+    songOrder:list[ SongOrderItem]
+
 @dataclass
 class Margins:
     top:   float= 0
@@ -98,3 +107,28 @@ class TopState:
             if n!=notifyer:
                 f(msg)
                 '''
+from state.talkState import TalkState
+from state.custumState import StateMaker
+def makeConstructor(f:Song|Talk)->StateMaker:#todo for everithing we want at songorder
+    if type(f)==Song:
+        return lambda p, i=f._id: SongState(p,p.topState.data.songs[i])
+    elif type(f)==Talk:
+        return lambda p, i=f._id: TalkState(p,p.topState.data.talks[i])
+    #unreachable
+    raise NotImplementedError
+def getKindName(f:Song|Talk):
+    if type(f)==Song:
+        return "song"
+    elif type(f)==Talk:
+        return "talk"
+    #unreachable
+    raise NotImplementedError
+def getTitle(f:Song|Talk):
+    if type(f)==Song:
+        return f.titles[0]
+    elif type(f)==Talk:
+        return f.title
+    #unreachable
+    raise NotImplementedError
+
+    

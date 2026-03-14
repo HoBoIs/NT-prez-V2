@@ -155,15 +155,15 @@ class ListItem(QFrame,metaclass=QABCMeta):
     @abstractmethod
     def setOrder(self,v:int)->None:
         pass
-    def updateSaveBtns(self):
-        self.changed=self.isChanged()
-        self.saver.setChanged(self.changed)
     @abstractmethod
     def save(self):
         pass
     @abstractmethod
     def cancelEdit(self):
         pass
+    def updateSaveBtns(self):
+        self.changed=self.isChanged()
+        self.saver.setChanged(self.changed)
 
 
 
@@ -188,7 +188,10 @@ class ListEditHless(QScrollArea,Generic[MyWidget]):
         self.last.onChangedData.connect(self.onLastEdited)
     def onLastEdited(self):
         self.last.onChangedData.disconnect()
-        newId=1+max([t.getID() for t in self.childs])
+        if self.childs:
+            newId=1+max([t.getID() for t in self.childs])
+        else:
+            newId=0
         self.last.setID(newId)
         self.last.setOrder(len(self.childs))
         self.childs.append(self.last)

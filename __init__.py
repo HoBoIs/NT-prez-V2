@@ -11,6 +11,7 @@ from display.signals import QtBridge
 import state.config as conf
 import os
 from state.template import readTemplates
+from state.songOrderIO import readSongOrder
 c=conf.readConfig()
 conf.writeConfig(c)
 app = QApplication(sys.argv)
@@ -33,7 +34,10 @@ ds=dataContainer(
         templstes=templates,
         images=images,
         imagesAfterSongs=imagesAfterSong,
-        imagesBeforeSongs=imagesBeforeSong)
+        imagesBeforeSongs=imagesBeforeSong,
+        songOrder=[])
+so=readSongOrder("./res/songOrder.json",ds)#TODO config
+ds.songOrder=so
 ts=TopState(ds,c)
 
 

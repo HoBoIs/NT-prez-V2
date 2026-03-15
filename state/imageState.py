@@ -19,7 +19,7 @@ class ImageState(state.State):
         print(self.image.path)
         return super().print()
     def actPreview(self) -> str:
-        return self.image.path
+        return self.image.path.split("/")[-1]
     def prevPreview(self) -> str:
         if self.parentState:
             return self.parentState.prevPreview()

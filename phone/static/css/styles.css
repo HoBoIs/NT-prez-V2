@@ -129,8 +129,10 @@ button:active {
 .note{
   overflow: hidden;
   font-size: clamp(6px,3vw,3vh);
-  text-overflow:ellipsis;
-
+  text-overflow:clip;
+  width: 18vw;
+  line-break: strict;
+  text-wrap: nowrap;
 }
 .VHalf div{
   height: 100%;

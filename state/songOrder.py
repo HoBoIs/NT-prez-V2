@@ -23,7 +23,6 @@ class SongOrder(CustumState):
         if self.between!=self.status.during or not self.imageAfter:
             self.between=self.status.during
             super().childEndedNxt()
-            self.between=self.status.after
         else:
             self.between=self.status.after
             images=self.topState.data.imagesAfterSongs
@@ -33,7 +32,6 @@ class SongOrder(CustumState):
         if self.between !=self.status.during or not self.imageAfter:
             self.between=self.status.during
             super().childEndedPrev()
-            self.between=self.status.before
         else:
             self.between=self.status.before
             images=self.topState.data.imagesBeforeSongs

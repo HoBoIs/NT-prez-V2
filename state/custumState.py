@@ -73,6 +73,8 @@ class CustumState(state.State):
             self.childState=now(self)
             if isinstance(self.childState,SongState) and self.childState.actual.verses==[]:
                 self.childEndedPrev()
+            else:
+                self.childState.setIndex(-1)
     def __init__(self,ts : "topState.TopState | state.State",cs:list[StateMaker],m:MediaDescript| None = None):
         super().__init__(ts)
         if not cs:

@@ -309,6 +309,7 @@ def start():
         host='127.0.0.1'
     for i in range(20):
         try:
+            state.port=8000+i
             socketio.run(app,host=host, debug=False,use_reloader=False,port=8000+i)
         except:
             print("port",8000+i ,"is unusable")

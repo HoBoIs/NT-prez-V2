@@ -61,6 +61,7 @@ class Margins:
     right: float= 0
 @dataclass
 class TopState:
+    port:int
     data : dataContainer
     margins:Margins
     cfg:conf.Config
@@ -76,6 +77,7 @@ class TopState:
     def getTemplate(self,i:int):
         return self.data.templstes[i]
     def __init__(self,data:dataContainer,c:conf.Config):
+        self.port=8000
         self._state=state.State(self )
         self.data=data
         self.margins=Margins()

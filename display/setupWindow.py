@@ -33,8 +33,8 @@ class SetupWindow(QWidget):
         self.layout_.addWidget(self.so,0,1)
     def addBridge(self,b:QtBridge):
         self.bridge=b
-    def sendUpdate(self,data={}):
-        self.bridge.sendUpdate(data)
+    def sendUpdate(self,data:dict={}):
+        self.bridge.sendUpdate(self.state.port,data)
         #for t in s.data.talks.values():
         #    self.container.addWidget(TalkEdit(t,s.data,self.state.cfg))
             

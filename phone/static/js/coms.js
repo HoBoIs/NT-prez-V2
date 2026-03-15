@@ -45,34 +45,59 @@ function loadData(chanel,data,contID){
     }*/
   }
 }
-function loadTalk(cont,btn,chanel,i){
+function loadTalk(cont,btn,chanel,idx){
   const text=btn.data.text
     btn.searchData=text
     btn.onclick = () => 
-    send(chanel,{"text":text,"index":i,"verseIdx":0})
+    send(chanel,{"text":text,"index":idx,"verseIdx":0})
     cont.appendChild(btn);
+      const subBtn=document.createElement("button");
+      const dv=document.createElement("div");
+      const dvTop=document.createElement("button")
+      dv.appendChild(dvTop)
+      dvTop.innerHTML=btn.data.text
+      dvTop.onclick = () => 
+        send(chanel,{"text":text,"index":idx,"verseIdx":0})
+      for (let j=0; j<btn.data.parts.length; j+=1){
+        const b=document.createElement("button")
+        b.onclick=()=>
+          send(chanel,{"text":text,"index":idx,"verseIdx":j})
+        b.innerText=btn.data.parts[j]
+        dv.appendChild(b)
+        console.log(b)
+
+      }
+      dv.dataShow="none"
+      subBtn.innerText="👁"
+      subBtn.onclick=(event)=>{
+        event.stopPropagation()
+        dv.dataShow=dv.dataShow=="none"?"":"none"
+        dv.style.display=dv.dataShow
+      }
+      dv.style.display="none"
+      btn.appendChild(subBtn)
+      cont.appendChild(dv)
+    
 }
 function loadSong(cont,btn,chanel,idx){
-  const aaa=idx
   const text=btn.data.text
     btn.searchData=sanitize(btn.data.titles.join(""))+"¤"+sanitize(btn.data.verses.join(""))
     btn.onclick = () => {
-      send(chanel,{"text":text,"index":aaa,"verseIdx":0})
+      send(chanel,{"text":text,"index":idx,"verseIdx":0})
     }
     cont.appendChild(btn);
     if (btn.data!=btn.innerText){
       const subBtn=document.createElement("button");
       const dv=document.createElement("div");
-      //dv.innerText=btn.data.titles.join('\n')+"\n---\n"+btn.data.verses.join('\n')
       const dvTop=document.createElement("button")
       dv.appendChild(dvTop)
       dvTop.innerHTML=btn.data.titles.join('\n')
       dvTop.onclick = () => 
-        send(chanel,{"text":text,"index":aaa,"verseIdx":0})
+        send(chanel,{"text":text,"index":idx,"verseIdx":0})
       for (let j=0; j<btn.data.verses.length; j+=1){
         const b=document.createElement("button")
         b.onclick=()=>
-          send(chanel,{"text":text,"index":aaa,"verseIdx":j})
+          send(chanel,{"text":text,"index":idx,"verseIdx":j})
         b.innerText=btn.data.verses[j]
         dv.appendChild(b)
 

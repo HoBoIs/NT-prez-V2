@@ -31,7 +31,7 @@ volume=0
 @dataclass
 class ComState:
     songs:list[dict[str,str|list[str]]]
-    talks:list[dict[str,str]]
+    talks:list[dict[str,str|list[str]]]
     music:list[dict[str,str]]
     templates:list[dict[str,str]]
     songOrder:list[dict[str,str|list[str]]]
@@ -51,10 +51,16 @@ def init(ts :topState.TopState,b:QtBridge):
     global lstate
     lstate=ComState([],[],[],[],[])
     lstate.refreshFromState(state)
-def transformTalk(t:Talk):
-    res:dict[str,str] ={}
+def transformTalk(t:Talk)->dict[str,str|list[str]]:
+    res:dict[str,str|list[str]] ={}
     res["text"]=t.title+" "+t.name
     res["searchData"]=res["text"]
+    res["parts"]=[t.title+" "+t.name]+[p for p in t.pictures]
+    if t.pictures:
+        res["parts"]+=[t.title+" "+t.name]
+    if t.thanks[0].verses:
+        res["parts"]+=[t.thanks[0].titles[0]+"\n"+",".join(t.thanks[1])]
+    res["music"]=t.media.path
     return res
 
 def transformSongOrder(s:topState.SongOrderItem, d:topState.dataContainer) -> dict[str,str|list[str]]:
@@ -63,9 +69,7 @@ def transformSongOrder(s:topState.SongOrderItem, d:topState.dataContainer) -> di
         res= transformSong(d.songs[s._id])
         res["kind"]="song"
     elif s.kind=="talk":
-        t=d.talks[s._id]
-        res["text"]=t.title+" "+t.name
-        res["searchData"]=res["text"]
+        res= transformTalk(d.talks[s._id])
         res["kind"]="talk"
     return res
 def transformSong(s:Song):
@@ -257,8 +261,8 @@ def sendsongOrder(data):
             return
         state._state=SongOrder(state,[x.cnst for x in state.data.songOrder])
         state._state.setIndex(pres_idx)
-        if "verse_idx" in data:
-            state._state.childState
+        if "verseIdx" in data and state._state.childState:
+            state._state.childState.setIndex(data["verseIdx"])
         #SongListState(state,list(state.data.songs.values()),pres_idx,data["verseIdx"])
         #emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         #print(state._state.childState)

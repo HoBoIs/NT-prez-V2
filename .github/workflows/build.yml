@@ -1,0 +1,19 @@
+name: Build package
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate version.json
+        run: |
+          COMMIT=$(git rev-parse --short HEAD)
+          DATE=$(git log -1 --format=%cI)
+
+          echo "{ \"commit\": \"$COMMIT\", \"date\": \"$DATE\" }" > version.json

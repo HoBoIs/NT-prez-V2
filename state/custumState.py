@@ -44,7 +44,7 @@ class CustumState(state.State):
     constructors:list[StateMaker]
     idx:int
     media:MediaDescript | None
-    def getMedia(self):
+    def getMedia(self)->MediaDescript|None:
         if self.childState:
             if res:= self.childState.getMedia():
                 return res

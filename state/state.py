@@ -33,17 +33,15 @@ class State:
         pass
     def childEndedPrev(self):
         pass
-    def getMedia(self)->"tS.MediaDescript | None": 
-        if self.childState:
-            return self.childState.getMedia()
-        return None
+    #def getMedia(self)->"tS.MediaDescript | None": 
+    #    if self.childState:
+    #        return self.childState.getMedia()
+    #    return None
     #For the phone frontend
     def nextPreview(self)->str:
         return "N/A"
     def prevPreview(self)->str:
         return "N/A"
-    def getPlayState(self):
-        return (0,0)
     def actPreview(self)->str:
         return "N/A"
     def getType(self):
@@ -65,6 +63,8 @@ class State:
         print(self.kind)
         if isinstance(self.childState,State) :
             self.childState.print()
+    def getMedia(self)->"tS.MediaDescript|None":
+        return None
 
 
     

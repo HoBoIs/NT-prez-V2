@@ -1,9 +1,11 @@
 from PyQt6.QtWidgets import QApplication, QBoxLayout, QGraphicsScene, QGraphicsTextItem, QGridLayout, QLabel, QMainWindow, QSizePolicy, QStackedLayout, QStackedWidget, QVBoxLayout, QWidget, QGraphicsView,QVBoxLayout,QGraphicsOpacityEffect
 import math
+import time
 from PyQt6.QtCore import Qt
 import typing
 import sys
 from display.image import DisplayImage
+from display.mediaType import getLength
 from display.signals import QtBridge,MEvent
 from state.custumState import MediaDescript
 from state.imageState import Image, ImageState
@@ -39,6 +41,8 @@ class MainWindow(QWidget):
     loadedImages:dict[str,DisplayImage]
     fade_anim : QPropertyAnimation
     effect : QGraphicsOpacityEffect
+    def sendUpdate(self,data:dict={}):
+        self.bridge.sendUpdate(self.state.port,data)
     def __init__(self, s:TopState):
         super().__init__()
         self.player=QMediaPlayer()
@@ -74,6 +78,8 @@ class MainWindow(QWidget):
             if m:=self.state.media:
                 m.descript.adEnfFun()
                 self.renderState()
+                m.status="STOPPED"
+                self.sendUpdate()
     def renderState(self):
         self.audioOutput.setVolume(math.log10(self.state._opts.Volume/100*9+1))
         print( math.log10(self.state._opts.Volume/100*9+1) )
@@ -123,18 +129,33 @@ class MainWindow(QWidget):
         self.handleInvert()
     def handleMedia(self,event:MEvent):
         if event == MEvent.START:#TODO reseume if paused
-            if m:=self.state._state.getMedia():
+            if m_:=self.state.getMedia():
+                m=m_.descript
+                if not m.path in self.state.mediaCache:
+                    dur=getLength(m.path)
+                else:
+                    dur=self.state.mediaCache[m.path].length
                 self.playSong(m)
-                self.state.media=MediaInfo(m,"PLAYING",self.player.duration(),self.player.position())
+                self.state.media=MediaInfo(m,"PLAYING",dur,self.player.position(),time.time())
+                print(self.player.duration(),"=dur")
+                self.state.mediaCache[m.path]=self.state.media
         elif event ==MEvent.STOP:
             self.stopSong()
             if self.state.media:
                 self.state.media.status="STOPPED"
+                print("STOP")
+                self.state.media.age=0
         elif event ==MEvent.PAUSE:
             self.pauseSong()
             if self.state.media:
+                print("PAUSE")
                 self.state.media.status="PAUSED"
                 self.state.media.age=float(self.player.position())
+        self.sendUpdate()
+        if self.state.media:
+            print(self.state.media.age,self.state.media.status,self.state.media.length)
+        else:
+            print("None")
 
         pass
     def addBridge(self,b:QtBridge):

@@ -65,8 +65,6 @@ function loadItem(cont,btn,chanel,idx,inner,partList){
       send(chanel,{"text":text,"index":idx,"verseIdx":j})
     b.innerText=partList[j]
     dv.appendChild(b)
-    console.log(b)
-
   }
   dv.dataShow="none"
   subBtn.innerText="👁"
@@ -119,10 +117,39 @@ socket.on("songSelected", (data) =>{
   document.querySelectorAll(".PrevNote").forEach(x=> x.innerText=prv)
   document.querySelectorAll(".NextNote").forEach(x=> x.innerText=nx)
 */})
+
+
+
+
+function makeMediaDataStr(m){
+  if (m.name=="-") return "0:0"
+  console.log(m)
+  var t
+  if (m.infoDate>0 && m.status=="PLAYING"){
+    t= -(m.infoDate-Date.now()/1000)
+  }else{
+    t=0
+  }
+  return Math.round(m.age+t)+":"+Math.round( m.length)
+}
+musicInterval="a"
+
 socket.on('previews',d=>{
   document.querySelectorAll(".PrevNote").forEach(x=> x.innerText=d.prev)
   document.querySelectorAll(".ActNote").forEach(x=> x.innerText=d.act)
   document.querySelectorAll(".NextNote").forEach(x=> x.innerText=d.next)
+  document.querySelectorAll(".MediaNameNote").forEach(x=> x.innerText= d.media.name.split(/[/\\]/).pop() )
+  songMedia=d.media
+  document.querySelectorAll(".MediaDataNote").forEach(x=> x.innerText=makeMediaDataStr(d.media))
+  if ( musicInterval!=7){
+    clearInterval(musicInterval)
+  }
+  if (d.media.status=="PLAYING")
+  musicInterval= setInterval(() => {
+      document.querySelectorAll(".MediaDataNote").forEach(x=> x.innerText = makeMediaDataStr(songMedia));
+  }, 1000);
+
+  
 })
 socket.on("volume",v =>{
   document.getElementById("volume").value=v
@@ -173,7 +200,7 @@ socket.on("talks",talks =>{
     const btn=document.createElement("button");
     btn.innerHTML = "<div>"+items[i].text+"</div>";
     btn.data = items[i]
-    loadTalk(cont,btn,"songOrderSet",i)
+    loadTalk(cont,btn,"talkSet",i)
   }
 })
 socket.on("template",data =>{

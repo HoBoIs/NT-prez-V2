@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from threading import Lock
 from typing import Callable
+from display.mediaType import getLength
 from state.image import Image
 from state.song import Song
 from state.songState import SongState
 from state.talk import Talk
 import state.state as state
-import state.mediainfo as mediainfo
 from state.template import Template
 import state.config as conf
 import typing
@@ -34,6 +34,7 @@ class MediaInfo:
     status:str
     length:float
     age:float
+    infoDate:float
 
 @dataclass
 class SongOrderItem:
@@ -66,10 +67,10 @@ class TopState:
     margins:Margins
     cfg:conf.Config
     subs:list[tuple [Callable,str]]
+    mediaCache:dict[str,MediaInfo]
     _lock:Lock =Lock()
     media:MediaInfo | None=None
     _opts = options()
-    _m_info=mediainfo.mediaInfo()
     def getSong(self,i:int):
         return self.data.songs[i]
     def getTalk(self,i:int):
@@ -78,6 +79,7 @@ class TopState:
         return self.data.templstes[i]
     def __init__(self,data:dataContainer,c:conf.Config):
         self.port=8000
+        self.mediaCache={}
         self._state=state.State(self )
         self.data=data
         self.margins=Margins()
@@ -102,6 +104,17 @@ class TopState:
             if s.path.endswith("/"+img):
                 return s
         return Image("",True)#Just to avoid static type errors We never get here
+    def getMedia(self):
+        res=None
+        for s in self._state.getChain():
+          if m:=s.getMedia():
+              res=m
+        if not res:
+            return None
+        if res.path in self.mediaCache:
+            return self.mediaCache[res.path]
+        else:
+            return MediaInfo(res,"STOPPED",getLength(res.path),0,0)
 '''
     def subsscribeChange(self,foo:Callable,name:str):
         self.subs.append((foo,name))

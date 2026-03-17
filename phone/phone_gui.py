@@ -110,6 +110,7 @@ def on_connect():
     sendTalks()
     sendTemplates()
     sendMusics()
+    sendPreviews()
     emit("volume",state._opts.Volume)
     emit("Auto",state._opts.autoPlay)
 
@@ -158,6 +159,7 @@ def handle_update(json):
     sendTalks(True)
     sendTemplates(True)
     sendMusics(True)
+    sendPreviews()
     emit("volume",state._opts.Volume,broadcast=True)
     emit("Auto",state._opts.autoPlay,broadcast=True)
 
@@ -209,10 +211,17 @@ def command(data):
             pass
         elif txt=="Empty":
             pass
+        elif txt=="PlayPause":
+            for s in state._state.getChain():
+                if isinstance(s,TalkState):
+                    bridge.mediaEvent.emit(MEvent.START)
+                    sendPreviews()
+            pass
         elif txt=="Music":
             for s in state._state.getChain():
                 if isinstance(s,TalkState):
                     bridge.mediaEvent.emit(MEvent.START)
+                    sendPreviews()
                     return
         elif txt=="Thanks":
             for s in state._state.getChain():
@@ -271,7 +280,13 @@ def sendsongOrder(data):
 
 def sendPreviews():
     s=state.getBonnomState()
-    d={"prev":s.prevPreview(),"act":s.actPreview(),"next":s.nextPreview()}
+    m=state.getMedia()
+    md:dict[str,str|float]
+    if m:
+        md={"name":m.descript.path,"length":m.length/1000,"status":m.status,"infoDate":m.infoDate,"age":m.age/1000}
+    else:
+        md={"name":"-"}
+    d={"prev":s.prevPreview(),"act":s.actPreview(),"next":s.nextPreview(),"media":md}
     emit("previews",d,broadcast=True)
 
 @socketio.on("songSet")

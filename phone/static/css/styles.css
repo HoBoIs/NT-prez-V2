@@ -53,9 +53,10 @@ html, body {
   display: flex;
 }
 .TopMenu button{
-flex: 1;
+flex: 1 1 0;
   font-size: 50px;
   text-align: middle;
+  min-width: 0;
 }
 .search {
   width: 100%;
@@ -130,9 +131,9 @@ button:active {
   overflow: hidden;
   font-size: clamp(6px,3vw,3vh);
   text-overflow:clip;
-  width: 18vw;
   line-break: strict;
   text-wrap: nowrap;
+  white-space: nowrap;     /* stay on one line */
 }
 .VHalf div{
   height: 100%;

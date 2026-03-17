@@ -25,3 +25,18 @@ def detectMediaType(path):
         return "audio"
     else:
         return "error"
+def getLength(path):
+    player = QMediaPlayer()
+    loop = QEventLoop()
+
+    def on_status_changed(status):
+        if status == QMediaPlayer.MediaStatus.LoadedMedia:
+            loop.quit()
+        elif status == QMediaPlayer.MediaStatus.InvalidMedia:
+            loop.quit()
+
+    player.mediaStatusChanged.connect(on_status_changed)
+    player.setSource(QUrl.fromLocalFile(path))
+
+    loop.exec()
+    return player.duration()

@@ -2,7 +2,7 @@
   "title": "Bemutatkozás",
   "name": "M. Julcsi & Andris",
   "media": {
-    "path":"blue.mp4",
+    "path":"demoVideo.mp4",
     "isVideo": true,
     "song": "",
     "autoPlay": true
@@ -18,7 +18,7 @@
   "title": "Isten hívása",
   "name": "V. Emese",
   "media":{
-    "path":"test.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -34,7 +34,7 @@
   "title": "Elmélkedés az imáról",
   "name": "Réka",
   "media":{
-    "path":"Reka_zene.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -50,7 +50,7 @@
   "title": "Az élet mint önátadás",
   "name": "Dani",
   "media":{
-    "path":"Dani_zene.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -66,7 +66,7 @@
   "title": "Önkép",
   "name": "A. Sári & Tádé",
   "media":{
-    "path":"sari_tade.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -83,7 +83,7 @@
   "title": "Krisztus műve",
   "name": "Bogi",
   "media":{
-    "path":"Bogi_Zene.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -99,7 +99,7 @@
   "title": "Kereszténynek lenni",
   "name": "Luca",
   "media":{
-    "path":"Luca_zene.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -115,7 +115,7 @@
   "title": "Keresztény közösség",
   "name": "Eszti",
   "media":{
-    "path":"Eszter_zene.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -147,7 +147,7 @@
   "title": "Elmélkedés az\nEucharisztiáról",
   "name": "Anti",
   "media":{
-    "path":"Anti_zene.wav",
+    "path":"test.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -180,7 +180,7 @@
   "title": "Küldetés",
   "name": "Bazsi",
   "media":{
-    "path":"Bazsi_zene.wav",
+    "path":"test.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -196,7 +196,7 @@
   "title": "Krisztus követése",
   "name": "Julcsa & Márk",
   "media":{
-    "path":"Mark_zene_cut.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -213,7 +213,7 @@
   "title": "Krisztusért dolgozni",
   "name": "M. Julcsi & Andris",
   "media":{
-    "path":"Julcsi_Andris_zene.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -328,7 +328,7 @@
   "title": "Techinka teszt",
   "name": "Levi és Balázs",
   "media":{
-    "path":"pakolas.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -344,7 +344,7 @@
   "title": "Keretmese",
   "name": "-",
   "media":{
-    "path":"Keretm_1.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -360,7 +360,7 @@
   "title": "Keretmese2",
   "name": "",
   "media":{
-    "path":"Keretm_2_1_szkander.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -376,7 +376,7 @@
   "title": "Keretmese2b",
   "name": "-",
   "media":{
-    "path":"Keretm_2_2_harc.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
@@ -392,7 +392,7 @@
   "title": "KeretVid",
   "name": "-",
   "media":{
-    "path":"Keretmese_Oroszlankiraly.mp4",
+    "path":"demoVideo.mp4",
     "isVideo": true,
     "song": "",
     "autoPlay": true
@@ -408,7 +408,7 @@
   "title": "KeretMese4",
   "name": "-",
   "media":{
-    "path":"Keretm_ 1.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true

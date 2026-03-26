@@ -2,7 +2,8 @@ from typing import Callable, Sequence
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QCompleter, QGridLayout, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget, QLabel
 from state.song import Song
-from state.topState import SongOrderItem, TopState, dataContainer, getKindName, getTitle, makeConstructor
+from state.topState import TopState, dataContainer
+from state.songOrderItem import SongOrderItem, SongOrderItemType
 from display.utils import DragHandle, ListEdit, ListEditHless, ListItem,ReorderContainer,SaveBtns,NoWheelComboBox
 from display.talkEdit import TalkEdit, TalkListEdit
 from state.config import Config
@@ -64,7 +65,7 @@ class FilterableComboBox(NoWheelComboBox):
     proxy_model:NormalizedProxyModel
     completer_:QCompleter
     _lineEdit:QLineEdit
-    def __init__(self, parent, items:Sequence[tuple[str,Talk|Song]],st:str):
+    def __init__(self, parent:QWidget | None, items:Sequence[tuple[str,SongOrderItemType]],st:str):
         super().__init__(parent)
         self._lineEdit= PasteAwareLineEdit(self)
         self.setLineEdit(self._lineEdit)
@@ -94,13 +95,13 @@ class FilterableComboBox(NoWheelComboBox):
         if not was:
             self.setCurrentText("")
 
-    def on_completer_activated(self, text):
+    def on_completer_activated(self, text:str):
         if text:
             index = self.findText(text)
             self.setCurrentIndex(index)
             self.activated.emit(self.currentIndex())
 
-    def add_item_with_data(self, text, obj):
+    def add_item_with_data(self, text:str, obj):
         self.addItem(text, obj)
 
 
@@ -113,8 +114,8 @@ class ItemEdit(ListItem):
     data:dataContainer
 
     categories:list[str]
-    items:list
-    selected:tuple[str,None|Song]
+    #items:list
+    selected:tuple[str,None|SongOrderItemType]
 
     onSave:Callable
     def handle_multiline_paste(self,lines):
@@ -137,7 +138,7 @@ class ItemEdit(ListItem):
         super().__init__()
         self.onSave=onSave
         self.data=data
-        self.item=("",None)
+        self.selected=("",None)
         self.conf=conf
         for i,w in enumerate([1,5,3,1,3,2,2]):
             self.layout_.setColumnStretch(i,w)
@@ -145,7 +146,7 @@ class ItemEdit(ListItem):
         #self.nameIn=FuzzyComboBox([("|".join( s.titles),s,"Song") for s in data.songs.values()])
         self.nameIn=FilterableComboBox(self,[("|".join( s.titles),s) for s in data.songs.values()]+[(t.title,t) for t in data.talks.values()],st)
         if st:
-            self.item=self.getItem()
+            self.selected=self.getItem()
         self.nameIn.setMinimumWidth(30)
         #self.nameIn.setEditable(True)
         self.layout_.addWidget(self.nameIn,0,1)
@@ -163,18 +164,19 @@ class ItemEdit(ListItem):
         self.layout_.addWidget(self.saver,0,6)
         self.nameIn.currentTextChanged.connect(self.onChange)
 
-    def getItem(self):
+    def getItem(self)->tuple[str,SongOrderItemType|None]:
         name=self.nameIn.currentText()
         index = self.nameIn.findText(name, Qt.MatchFlag.MatchExactly)
+        data:SongOrderItemType|None
         if index >= 0:
-            data=self.nameIn.itemData(index,Qt.ItemDataRole.UserRole)
+            data =self.nameIn.itemData(index,Qt.ItemDataRole.UserRole)
         else:
             data=None
         return (name,data)
     def isChanged(self)->bool:
-        return self.item!=self.getItem()
+        return self.selected!=self.getItem()
     def getID(self)->int:#szerep ott lesz ha lesz verszsza-sorrend variálás
-        if self.item[1]:
+        if self.selected[1]:
             return 0
         return -1
     def setID(self,v:int)->None:#szerep ott lesz ha lesz verszsza-sorrend variálás
@@ -183,19 +185,19 @@ class ItemEdit(ListItem):
         pass
     def save(self):
         if self.getItem()[1]:
-            self.item=self.getItem()
+            self.selected=self.getItem()
             self.updateSaveBtns()
             self.onSave()
     def cancelEdit(self):
-        self.nameIn.setCurrentText(self.item[0])
+        self.nameIn.setCurrentText(self.selected[0])
         pass
     def onChange(self):
         self.updateSaveBtns()
         self.onChangedData.emit()
-    def getConstructor(self):
-        i=self.item
+    """def getConstructor(self):
+        i=self.selected
         if i[1]:
-            return makeConstructor(i[1])
+            return makeConstructor(i[1])"""
         
 class Header(QWidget):
     layout_: QGridLayout
@@ -232,11 +234,11 @@ class SongOrderEditor(ListEdit):
         self.os=onSave
         
     def writeToState(self):
-        res=[(s.getConstructor(),s.getItem()[1]) for s in self.ls]
+        res :list[SongOrderItemType|None] =[(s.getItem()[1]) for s in self.ls]
         #for i,s in enumerate(self.ls):
         #    res+=[s.getConstructor()]
         with self.ts._lock:
-            self.data.songOrder=[SongOrderItem (r[0],getTitle(r[1]),getKindName(r[1]),r[1]._id) for r in res if r[0]and r[1]]
+            self.data.songOrder=[SongOrderItem (r) for r in res if r]
         #p=self.parent()
         #from display.setupWindow import SetupWindow
         #if isinstance(p,SetupWindow):

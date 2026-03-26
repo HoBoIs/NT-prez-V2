@@ -45,8 +45,12 @@ class SongState(state.State):
             return self.actual.verses[self.verseIdx-1].split("\n")[0]
     def actPreview(self) -> str:
         return self.actual.verses[self.verseIdx].split("\n")[0]
+    def getIdxsForFL(self) -> list[int]:
+        return [self.verseIdx]
 
-from state.config import Config
+"""
+SongListState is no longer needed.
+Functionality was merged into SongOrderState
 
 class SongListState(state.State):
     songs:list[Song]
@@ -140,16 +144,4 @@ class SongListState(state.State):
             if self.atEnd:
                 return "Dal utáni Logó"
             return "Dal elötti üres"
-
-
-        
-
-    """def render(self):
-        if (self.childState):
-            self.childState.render()
-        else:
-            if self.atEnd:
-                self.mainWindow.displayImage(random.choice(self.logos))
-            else:
-                self.mainWindow.displayVerse("")
-                """
+"""

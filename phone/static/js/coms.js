@@ -26,7 +26,7 @@ function loadData(chanel,data,contID){
     btn.data = items[i]
     btn.searchData=items[i].text
     btn.onclick = () => 
-      send(chanel,{"text":items[i].text,"index":i})
+      send(chanel,{"text":items[i].text,"indexes":[i]})
     cont.appendChild(btn);
     /*if (btn.data!=btn.innerText && chanel=="songSet"){
       const subBtn=document.createElement("button");
@@ -49,23 +49,33 @@ function loadItem(cont,btn,chanel,idx,inner,partList){
   const text=btn.data.text
   //!!!btn.searchData
   btn.onclick = () => 
-  send(chanel,{"text":text,"index":idx,"verseIdx":0})
-  btn.id=chanel+" "+idx
+    send(chanel,{"text":text,"indexes":[idx,0]})
+  btn.id="MainBtn|"+chanel+"|"+idx
   cont.appendChild(btn);
   const subBtn=document.createElement("button");
   const dv=document.createElement("div");
-  const dvTop=document.createElement("button")
-  dv.appendChild(dvTop)
-  dvTop.innerHTML=inner
-  dvTop.onclick = () => 
-    send(chanel,{"text":text,"index":idx,"verseIdx":0})
+  if (inner != text){
+    const dvTop=document.createElement("button")
+    dv.appendChild(dvTop)
+    dvTop.innerHTML=inner
+    dvTop.onclick = () => 
+    send(chanel,{"text":text,"indexes":[idx,0]})
+  }
   for (let j=0; j<partList.length; j+=1){
     const b=document.createElement("button")
+    b.id= 'Subpart|'+chanel+'|'+idx+';'+j
     b.onclick=()=>
-      send(chanel,{"text":text,"index":idx,"verseIdx":j})
+      send(chanel,{"text":text,"indexes":[idx,j]})
     b.innerText=partList[j]
     dv.appendChild(b)
   }
+  /*if (btn.data.music+"" != "undefined" && btn.data.music.split(/[/\\]/).pop() != ''){
+    const b=document.createElement("button")
+    b.onclick=()=>
+      send(chanel,{"text":btn.data.music.split(/[/\\]/).pop(),"index":idx,"verseIdx":0})
+    b.innerText="Zene: " + btn.data.music.split(/[/\\]/).pop()
+    dv.appendChild(b)
+  }*/
   dv.dataShow="none"
   subBtn.innerText="👁"
   subBtn.onclick=(event)=>{
@@ -149,6 +159,12 @@ socket.on('previews',d=>{
       document.querySelectorAll(".MediaDataNote").forEach(x=> x.innerText = makeMediaDataStr(songMedia));
   }, 1000);
 
+  document.querySelectorAll(".HLT").forEach(x=>x.classList.remove("HLT"))
+  if (document.getElementById("MainBtn|"+d.mode+"Set|"+d.indexes[0]))
+    document.getElementById("MainBtn|"+d.mode+"Set|"+d.indexes[0]).classList.add("HLT")
+  if (d.indexes.length>1 && document.getElementById("Subpart|"+d.mode+"Set|"+d.indexes[0]+";"+d.indexes[1]))
+    document.getElementById("Subpart|"+d.mode+"Set|"+d.indexes[0]+";"+d.indexes[1]).classList.add("HLT")
+  
   
 })
 socket.on("volume",v =>{

@@ -43,7 +43,7 @@ class SongOrder(CustumState):
     def setIndex(self,idx:int):
         self.between=self.status.during
         super().setIndex(idx)
-    def nextPreview(self):
+    def nextPreview(self) -> str:
         if self.between==self.status.after and self.idx+1==len(self.constructors):
             return self.parentState.nextPreview() if self.parentState else ""
         if self.between==self.status.during:
@@ -75,3 +75,9 @@ class SongOrder(CustumState):
         if self.between==self.status.before:
             return "Dal elötti üres"
         return ""#unreachable
+    def getIdxsForFL(self) -> list[int]:
+        if not self.childState:
+            return [-1,-1]
+        if self.between == self.status.during:
+            return [self.idx] + self.childState.getIdxsForFL()
+        return [-1,-1] #TODO kigondolni hogy mi legyen kiemelve

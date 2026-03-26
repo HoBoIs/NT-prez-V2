@@ -17,6 +17,7 @@ from PyQt6.QtGui import QFont, QKeyEvent, QPaintDevice, QPainter, QPixmap, QTran
 from PyQt6.QtCore import QTimer, QUrl, Qt, QPropertyAnimation
 from PyQt6.QtGui import QFontMetrics,QTextDocument
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+from state.vilagSarkok import VilagSarkok
 
 def html_bounding_rect(html: str, font: QFont):
     doc = QTextDocument()
@@ -82,13 +83,22 @@ class MainWindow(QWidget):
                 self.sendUpdate()
     def renderState(self):
         self.audioOutput.setVolume(math.log10(self.state._opts.Volume/100*9+1))
-        print( math.log10(self.state._opts.Volume/100*9+1) )
+        #print( math.log10(self.state._opts.Volume/100*9+1) )
         toR=self.state.getBonnomState()
         self.clearLayout()
         if type(toR)==SongState:
             self.renderVerse(toR.actual.verses[toR.verseIdx])
         elif type(toR)==ImageState:
             self.renderImage(toR.image)
+            if isinstance(toR.parentState,VilagSarkok):
+                nameDisplay=QLabel(toR.parentState.getCities()[-1].name)
+                nameDisplay.setStyleSheet("background-color: transparent; color: white; ")
+                nameDisplay.setAlignment(Qt.AlignmentFlag.AlignHCenter )
+                nameDisplay.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter )
+                f=nameDisplay.font()
+                f.setPointSize(80)
+                nameDisplay.setFont(f )
+                self.layout_.addWidget(nameDisplay,0,0)
         elif type(toR)==TitleState:
             self.renderTitle(toR.title)
     def clearLayout(self):
@@ -107,7 +117,12 @@ class MainWindow(QWidget):
         self.adjustFontSize()
         self.handleInvert()
     def renderImage(self,image:Image):
-        if not image.path in self.loadedImages:
+        if image.path.endswith("svg"):#TODO felismerni igazibol a vilag sarkati
+            self.loadedImages[image.path]=DisplayImage(image)
+            s0=self.state.getBonnomState()
+            if isinstance( s0.parentState,VilagSarkok):
+                self.loadedImages[image.path].convert(s0.parentState.getCities())
+        elif not image.path in self.loadedImages:
             self.loadedImages[image.path]=DisplayImage(image)
         self.textDisplay.setText("")
         self.defaultDisplaySet()
@@ -191,7 +206,8 @@ class MainWindow(QWidget):
                 self.showFullScreen()
             self.is_fullscreen = not self.is_fullscreen
         if a0 and a0.key() == Qt.Key.Key_F1:
-            self.adjustFontSize()
+            self.state._state=VilagSarkok(self.state,self.state.cfg,["Sásd","Óbuda","Budakeszi","Munkács","Győr","Rákóczifalva","Balatonboglár","New York","Kárpátalja","Városmajor","Budapest","Világ"])
+            self.renderState()#TODO Rendesen megoldani az indítást és a város bevitelt
         if a0 and a0.key() == Qt.Key.Key_F2:
             self.state._state.print()
     def handleInvert(self):

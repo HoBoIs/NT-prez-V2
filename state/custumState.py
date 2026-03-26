@@ -1,4 +1,6 @@
 from typing import Callable, Concatenate
+from state.image import Image
+from state.imageState import ImageState
 from state.song import Song
 from state.songState import SongState
 import state.state as state
@@ -59,7 +61,7 @@ class CustumState(state.State):
             self.idx+=1
             now=self.constructors[self.idx]
             self.childState=now(self)
-            if isinstance(self.childState,SongState) and self.childState.actual.verses==[]:
+            while isinstance(self.childState,SongState) and self.childState.actual.verses==[]:
                 self.childEndedNxt()
     def prevState(self):
         if self.childState:
@@ -71,9 +73,9 @@ class CustumState(state.State):
             self.idx-=1
             now=self.constructors[self.idx]
             self.childState=now(self)
-            if isinstance(self.childState,SongState) and self.childState.actual.verses==[]:
+            while isinstance(self.childState,SongState) and self.childState.actual.verses==[]:
                 self.childEndedPrev()
-            else:
+            if isinstance(self.childState,SongState):
                 self.childState.setIndex(-1)
     def __init__(self,ts : "topState.TopState | state.State",cs:list[StateMaker],m:MediaDescript| None = None):
         super().__init__(ts)
@@ -93,4 +95,36 @@ class CustumState(state.State):
             idx+=len(self.constructors)
         self.idx=idx
         self.childState=self.constructors[idx](self)
+    def getIdxsForFL(self) -> list[int]:
+        if self.childState:
+            return [self.idx]+self.childState.getIdxsForFL()
+        return [self.idx]
 
+class ClampedSongState(CustumState):
+    def __init__(self, ts: "topState.TopState | state.State",sng:Song,img:Image,img2:Image|None=None,subIdx=0):
+        if not img2:
+            img2=img
+        cs=[lambda s: ImageState(s,img), lambda s: SongState(s,sng),lambda s: ImageState(s,img2)]
+        super().__init__(ts, cs, None)
+        self.setIndex(1)
+        if self.childState:
+            self.childState.setIndex(subIdx)
+    def nextPreview(self):
+        if self.idx==1:
+            return "Üres"
+        if self.idx==0:
+            tmp = self.constructors[1](self)
+            return tmp.actPreview()
+        return "N/A"
+    def prevPreview(self):
+        if self.idx==1:
+            return "Üres"
+        if self.idx==2:
+            tmp = self.constructors[1](self)
+            tmp.setIndex(-1)
+            return tmp.actPreview()
+        return "N/A"
+    def getIdxsForFL(self) -> list[int]:
+        if self.idx==1 and self.childState:
+            return self.childState.getIdxsForFL()
+        return [-1]

@@ -1,6 +1,6 @@
 [{
   "title": "Bemutatkozás",
-  "name": "M. Julcsi & Andris",
+  "name": "Brünhilda & Dezső",
   "media": {
     "path":"demoVideo.mp4",
     "isVideo": true,
@@ -9,14 +9,14 @@
   },
   "thanks": {
     "title":"Köszönjük páros",
-    "names": ["Julcsit",
-    "Andrist"]
+    "names": ["Brünhildát",
+    "Dezsőt"]
   },
   "images": []
 },
 {
   "title": "Isten hívása",
-  "name": "V. Emese",
+  "name": "Dezső",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -25,14 +25,14 @@
   },
   "thanks": {
     "title":"Hála néked XY-ért",
-    "names": ["Emeséért"]
+    "names": ["Dezsőért"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Elmélkedés az imáról",
-  "name": "Réka",
+  "name": "Brünhilda",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -41,14 +41,14 @@
   },
   "thanks": {
     "title":"Köszönjük néked XY-t",
-    "names": ["Rékát"]
+    "names": ["Brünhildát"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Az élet mint önátadás",
-  "name": "Dani",
+  "name": "Dezső",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -57,14 +57,14 @@
   },
   "thanks": {
     "title":"Hála néked XY-ért",
-    "names": ["Daniért"]
+    "names": ["Dezsőért"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Önkép",
-  "name": "A. Sári & Tádé",
+  "name": "Brünhilda & Dezső",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -73,15 +73,15 @@
   },
   "thanks": {
     "title":"Köszönjük páros",
-    "names": ["Sárit",
-    "Tádét"]
+    "names": ["Brünhildát",
+    "Dezsőt"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Krisztus műve",
-  "name": "Bogi",
+  "name": "Dezső",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -90,14 +90,14 @@
   },
   "thanks": {
     "title":"Köszönjük néked XY-t",
-    "names": ["Bogit"]
+    "names": ["Dezsőt"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Kereszténynek lenni",
-  "name": "Luca",
+  "name": "Brünhilda",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -106,14 +106,14 @@
   },
   "thanks": {
     "title":"Hála néked XY-ért",
-    "names": ["Lucáért"]
+    "names": ["Brünhildáért"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Keresztény közösség",
-  "name": "Eszti",
+  "name": "Dezső",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -122,14 +122,14 @@
   },
   "thanks": {
     "title":"Hála néked XY-ért",
-    "names": ["Esztiért"]
+    "names": ["Dezsőért"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Kiengesztelődés",
-  "name": "Marci",
+  "name": "Dezső",
   "media":{
     "path":"",
     "isVideo": false,
@@ -145,40 +145,40 @@
 },
 {
   "title": "Elmélkedés az\nEucharisztiáról",
-  "name": "Anti",
+  "name": "Dezső",
   "media":{
-    "path":"test.mp3",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
   },
   "thanks": {
     "title":"Köszönjük néked XY-t",
-    "names": ["Antit"]
+    "names": ["Dezsőt"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Egyház a világban",
-  "name": "W. Júlia & Domi",
+  "name": "Brünhilda & Dezső",
   "media":{
-    "path":"",
+    "path":"demoMusic.mp3",
     "isVideo": false,
     "song": "",
     "autoPlay": true
   },
   "thanks": {
     "title":"Köszönjük páros",
-    "names": ["Júliát",
-    "Domit"]
+    "names": ["Brünhildát",
+    "Dezsőt"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Küldetés",
-  "name": "Bazsi",
+  "name": "Brünhilda",
   "media":{
     "path":"test.mp3",
     "isVideo": false,
@@ -187,14 +187,14 @@
   },
   "thanks": {
     "title":"Hála néked XY-ért",
-    "names": ["Bazsiért"]
+    "names": ["Brünhildáért"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Krisztus követése",
-  "name": "Julcsa & Márk",
+  "name": "Brünhilda & Dezső",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -203,15 +203,15 @@
   },
   "thanks": {
     "title":"Köszönjük páros",
-    "names": ["Julcsát",
-    "Márkot"]
+    "names": ["Brünhildát",
+    "Dezsőt"]
   },
   "images": [],
   "song": "-"
 },
 {
   "title": "Krisztusért dolgozni",
-  "name": "M. Julcsi & Andris",
+  "name": "Brünhilda & Dezső",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,
@@ -220,8 +220,8 @@
   },
   "thanks": {
     "title":"Köszönjük páros",
-    "names": ["Julcsit",
-    "Andrist"]
+    "names": ["Brünhildát",
+    "Dezsőt"]
   },
   "images": [],
   "song": "-"
@@ -326,7 +326,7 @@
 },
 {
   "title": "Techinka teszt",
-  "name": "Levi és Balázs",
+  "name": "Boti",
   "media":{
     "path":"demoMusic.mp3",
     "isVideo": false,

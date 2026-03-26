@@ -19,18 +19,21 @@ class SetupWindow(QWidget):
     layout_: QGridLayout
     state:TopState
     items:list[TalkEdit]
+    tle:TalkListEdit
+    soe:SongOrderEditor
+    parts:list[QWidget]
     def __init__(self, s:TopState):
         super().__init__()
         self.state=s
         self.layout_=QGridLayout(self)
         self.setLayout(self.layout_)
-        self.items=[]
-        i=0
-        self.layout_.addWidget(TalkListEdit(self,s,self.sendUpdate),0,0)
+        self.tle=TalkListEdit(self,s,self.sendUpdate)
         #soe=ItemEdit(s.data,self.state.cfg)
-        self.so=SongOrderEditor(None,s.data,self.state.cfg,self.state,self.sendUpdate)
-        
-        self.layout_.addWidget(self.so,0,1)
+        self.soe=SongOrderEditor(None,s.data,self.state.cfg,self.state,self.sendUpdate)
+        self.parts=[self.soe,self.tle]
+
+        self.layout_.addWidget(self.tle,0,0)
+        self.layout_.addWidget(self.soe,0,1)
     def addBridge(self,b:QtBridge):
         self.bridge=b
     def sendUpdate(self,data:dict={}):

@@ -53,12 +53,11 @@ class State:
         return res
     def setIndex(self,idx:int):
         pass
-    def destruct(self): 
-        # destructs the state's all children. This is for avoiding memory leaks because of the circular dependencies
+    def getIdxsForFL(self)->list[int]:
+        res=[0]
         if self.childState:
-            self.childState.destruct()
-        self.childState=None
-        self.parentState=None
+            res+=self.childState.getIdxsForFL()
+        return [0]
     def print(self):
         print(self.kind)
         if isinstance(self.childState,State) :

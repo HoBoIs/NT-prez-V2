@@ -36,12 +36,7 @@ class MediaInfo:
     age:float
     infoDate:float
 
-@dataclass
-class SongOrderItem:
-    cnst:"StateMaker"
-    title: str
-    kind:str
-    _id:int
+        
 
 @dataclass
 class dataContainer:
@@ -52,7 +47,7 @@ class dataContainer:
     images:list[Image]
     imagesAfterSongs:list[Image]
     imagesBeforeSongs:list[Image]
-    songOrder:list[ SongOrderItem]
+    songOrder:list[ "SongOrderItem"]
 
 @dataclass
 class Margins:
@@ -63,6 +58,7 @@ class Margins:
 @dataclass
 class TopState:
     port:int
+    ip:str
     data : dataContainer
     margins:Margins
     cfg:conf.Config
@@ -79,6 +75,7 @@ class TopState:
         return self.data.templstes[i]
     def __init__(self,data:dataContainer,c:conf.Config):
         self.port=8000
+        self.ip=""
         self.mediaCache={}
         self._state=state.State(self )
         self.data=data
@@ -115,36 +112,5 @@ class TopState:
             return self.mediaCache[res.path]
         else:
             return MediaInfo(res,"STOPPED",getLength(res.path),0,0)
-'''
-    def subsscribeChange(self,foo:Callable,name:str):
-        self.subs.append((foo,name))
-    def notifyAll(self,notifyer,msg):
-        for f,n in self.subs:
-            if n!=notifyer:
-                f(msg)
-                '''
-from state.talkState import TalkState
-from state.custumState import StateMaker
-def makeConstructor(f:Song|Talk)->StateMaker:#todo for everithing we want at songorder
-    if type(f)==Song:
-        return lambda p, i=f._id: SongState(p,p.topState.data.songs[i])
-    elif type(f)==Talk:
-        return lambda p, i=f._id: TalkState(p,p.topState.data.talks[i])
-    #unreachable
-    raise NotImplementedError
-def getKindName(f:Song|Talk):
-    if type(f)==Song:
-        return "song"
-    elif type(f)==Talk:
-        return "talk"
-    #unreachable
-    raise NotImplementedError
-def getTitle(f:Song|Talk):
-    if type(f)==Song:
-        return f.titles[0]
-    elif type(f)==Talk:
-        return f.title
-    #unreachable
-    raise NotImplementedError
 
-    
+from state.songOrderItem import SongOrderItem

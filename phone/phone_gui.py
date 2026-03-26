@@ -3,13 +3,15 @@ from flask import Flask,request,render_template
 from flask_socketio import SocketIO, emit
 import json
 
+from state.custumState import ClampedSongState
+from state.image import Image
 from state.songOrder import SongOrder
 from state.talkState import TalkState
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*") #disable monitoring?
 from state.talk import Talk
 from state.song import Song
-from state.songState import SongListState, SongState
+from state.songState import SongState
 import state.topState as topState
 import time
 from display.signals import QtBridge,MEvent
@@ -35,6 +37,13 @@ class ComState:
     music:list[dict[str,str]]
     templates:list[dict[str,str]]
     songOrder:list[dict[str,str|list[str]]]
+    idxs:list[int]
+    mode:str=""
+    def __init__(self,st:topState.TopState):
+        self.refreshFromState(st)
+        self.templates=[]
+        self.mode=""
+        self.idxs=[]
     def refreshFromState(self,st:topState.TopState):
         self.songs=[transformSong(s) for s in st.data.songs.values()]
         self.talks=[transformTalk(s) for s in st.data.talks.values()]
@@ -49,11 +58,10 @@ def init(ts :topState.TopState,b:QtBridge):
     bridge=b
     state=ts
     global lstate
-    lstate=ComState([],[],[],[],[])
-    lstate.refreshFromState(state)
+    lstate=ComState(state)
 def transformTalk(t:Talk)->dict[str,str|list[str]]:
     res:dict[str,str|list[str]] ={}
-    res["text"]=t.title+" "+t.name
+    res["text"]=t.name+" | "+t.title
     res["searchData"]=res["text"]
     res["parts"]=[t.title+" "+t.name]+[p for p in t.pictures]
     if t.pictures:
@@ -65,12 +73,14 @@ def transformTalk(t:Talk)->dict[str,str|list[str]]:
 
 def transformSongOrder(s:topState.SongOrderItem, d:topState.dataContainer) -> dict[str,str|list[str]]:
     res:dict[str,str|list[str]] ={}
-    if s.kind=="song":
-        res= transformSong(d.songs[s._id])
-        res["kind"]="song"
-    elif s.kind=="talk":
-        res= transformTalk(d.talks[s._id])
-        res["kind"]="talk"
+    match s.data:
+        case Song():
+            res=transformSong(d.songs[s._id])
+        case Talk():
+            res=transformTalk(d.talks[s._id])
+        case _:
+            assert_never(data)
+    res["kind"]=s.kind
     return res
 def transformSong(s:Song):
     res:dict[str,str|list[str]] ={}
@@ -181,14 +191,9 @@ def marginSet(data):
         elif txt[0]=='R':
             state.margins.right=inc(state.margins.right,txt[1],state.margins.left)
         bridge.stateUpdated.emit()
-def sendSongState():
-  if (isinstance(state._state,SongListState)):
-      si=state._state.SongIdx
-      if type(state._state.childState)==SongState:
-          vi=state._state.childState.verseIdx
-          emit("songSelected",{"songidx":si,"vidx":vi},broadcast=True)
-      else:
-          emit("songSelected",{"songidx":si,"vidx":-1},broadcast=True)
+
+def sendStateToPhones(c:str,i:int,j:int):
+    emit("Selected",{"mainIdx":i,"subIdx":j,"chanel":c})
 
 @socketio.on("command")
 def command(data):
@@ -199,12 +204,10 @@ def command(data):
         txt=data["text"]
         if txt=="Next":
             state._state.nextState()
-            sendSongState()
             bridge.stateUpdated.emit()
         elif txt=="Prev":
             state._state.prevState()
             bridge.stateUpdated.emit()
-            sendSongState()
         elif txt=="Skip":
             state._state.childEndedNxt()
             bridge.stateUpdated.emit()
@@ -231,6 +234,10 @@ def command(data):
         elif txt=="Invert":
             state._opts.inversion=not state._opts.inversion
             bridge.stateUpdated.emit()
+        if lstate.mode=="songOrder":
+            lstate.idxs=state._state.getIdxsForFL()
+        else:
+            lstate.idxs=[lstate.idxs[0]] + state._state.getIdxsForFL()
         sendPreviews()
         #TODO: notify
 
@@ -240,19 +247,22 @@ def sendTalk(data):
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
-        pres_idx=data['index']
+        pres_idx=data['indexes'][0]
         pres_txt=data['text']
 
         if lstate.talks[pres_idx]['text']!=pres_txt:
             sendTalks()
             return
         state._state=TalkState(state,state.data.talks[pres_idx])
+        state._state.setIndex(data['indexes'][1])
         if state.media and isinstance(state.media.descript.parent,TalkState):
             p=state.media.descript.parent
             if p.talk.title == state.data.talks[pres_idx].title and p.talk.name == state.data.talks[pres_idx].name:
                 state.media.descript.parent=state._state
                 state.media.descript.adEnfFun=state._state.toThanks
-        emit("talkSelected",{"talkidx":data['index']},broadcast=True)
+        lstate.mode="talk"
+        lstate.idxs=data['indexes']
+        #emit("talkSelected",{"talkidx":data['indexes']},broadcast=True)
         sendPreviews()
         bridge.stateUpdated.emit()
 
@@ -262,7 +272,7 @@ def sendsongOrder(data):
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
-        pres_idx=data['index']
+        pres_idx=data['indexes'][0]
         pres_txt=data['text']
         if lstate.songOrder[pres_idx]['text']!=pres_txt:
             print( lstate.songOrder[pres_idx]['text'],pres_txt)
@@ -270,10 +280,12 @@ def sendsongOrder(data):
             return
         state._state=SongOrder(state,[x.cnst for x in state.data.songOrder])
         state._state.setIndex(pres_idx)
-        if "verseIdx" in data and state._state.childState:
-            state._state.childState.setIndex(data["verseIdx"])
+        if len(data['indexes'])>1 and state._state.childState:
+            state._state.childState.setIndex(data["indexes"][1])
         #SongListState(state,list(state.data.songs.values()),pres_idx,data["verseIdx"])
         #emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
+        lstate.mode="songOrder"
+        lstate.idxs=data['indexes']
         #print(state._state.childState)
         sendPreviews()
         bridge.stateUpdated.emit()
@@ -286,7 +298,7 @@ def sendPreviews():
         md={"name":m.descript.path,"length":m.length/1000,"status":m.status,"infoDate":m.infoDate,"age":m.age/1000}
     else:
         md={"name":"-"}
-    d={"prev":s.prevPreview(),"act":s.actPreview(),"next":s.nextPreview(),"media":md}
+    d={"prev":s.prevPreview(),"act":s.actPreview(),"next":s.nextPreview(),"media":md,"indexes":lstate.idxs,"mode":lstate.mode}
     emit("previews",d,broadcast=True)
 
 @socketio.on("songSet")
@@ -295,13 +307,17 @@ def sendsong(data):
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
-        pres_idx=data['index']
+        pres_idx=data['indexes'][0]
         pres_txt=data['text']
         if lstate.songs[pres_idx]['text']!=pres_txt:
             sendSongs()
             return
-        state._state=SongListState(state,list(state.data.songs.values()),pres_idx,data["verseIdx"])
-        emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
+        state._state=ClampedSongState(state,
+                                      list(state.data.songs.values())[pres_idx],
+                                      Image(""),subIdx=data["indexes"][1])
+        lstate.mode="song"
+        lstate.idxs=data['indexes']
+        #emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         sendPreviews()
         #print(state._state.childState)
         bridge.stateUpdated.emit()
@@ -329,8 +345,19 @@ def start():
     for i in range(20):
         try:
             state.port=8000+i
+            state.ip=host
             socketio.run(app,host=host, debug=False,use_reloader=False,port=8000+i)
         except:
             print("port",8000+i ,"is unusable")
             pass
     #app.run(host="0.0.0.0",debug=True)
+'''
+import psutil
+import socket
+
+addrs = psutil.net_if_addrs()
+
+for interface, addr_list in addrs.items():
+        for addr in addr_list:
+                if addr.family == socket.AF_INET:
+                            print(f"{interface}: {addr.address}")'''

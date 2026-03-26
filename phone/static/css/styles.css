@@ -82,6 +82,9 @@ flex: 1 1 0;
 button:active {
   background-color: gray;
 }
+button:active div{
+  background-color: gray;
+}
 .scrollable div{
   font-size: clamp(10px,3vw,3vh);
 }

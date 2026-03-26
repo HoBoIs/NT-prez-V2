@@ -9,6 +9,7 @@ import state.titleState as tlState
 import state.custumState as custumState
 import state.imageState as imgState
 from typing import Callable
+from state.image import Image
 #from state.song import Song
 
 class TalkState(custumState.CustumState):
@@ -79,7 +80,25 @@ class TalkState(custumState.CustumState):
         if idx>1 and idx==len(self.talk.pictures)+1:
             return self.talk.title
         if idx==self.thxIdx:
-            return self.talk.thanks[0].titles[0]+" "+",".join(self.talk.thanks[1])
+            return self.talk.thanks[0].titles[0]+" "+",".join(self.talk.thanks[1]) if self.talk.thanks[0].titles else ""
         return ""
     def actPreview(self) -> str:
         return self.findPreview(self.idx)
+    def nextState(self):
+        super().nextState()
+    def findImg(self,img:str)->Image :
+        ls=self.topState.data.images
+        for i in ls:
+            if i.path.endswith("/"+img):
+                return i
+        return Image("")
+    def getIdxsForFL(self) -> list[int]:
+        if self.thxIdx==-1:
+            return [self.idx]
+        if self.idx < self.thxIdx:
+            return [self.idx]
+        return [self.idx] #TODO több versszakos köszönjükre felkészülni
+    #TODO énekszövegre felkészülni
+
+
+

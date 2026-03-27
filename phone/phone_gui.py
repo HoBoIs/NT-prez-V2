@@ -8,7 +8,7 @@ from state.image import Image
 from state.songOrder import SongOrder
 from state.talkState import TalkState
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*") #disable monitoring?
+socketio = SocketIO(app, cors_allowed_origins="*",ping_interval=10) #disable monitoring?
 from state.talk import Talk
 from state.song import Song
 from state.songState import SongState
@@ -134,6 +134,7 @@ def onSondSet(data):
         print('got:',data)
         txt : str=data["text"]
         if txt=="Play":
+            bridge.mediaEvent.emit(MEvent.START)
             pass
         elif txt=="Pause":
             bridge.mediaEvent.emit(MEvent.PAUSE)
@@ -216,16 +217,12 @@ def command(data):
             pass
         elif txt=="PlayPause":
             for s in state._state.getChain():
-                if isinstance(s,TalkState):
-                    bridge.mediaEvent.emit(MEvent.START)
-                    sendPreviews()
-            pass
+                if isinstance(s,TalkState):#TODO rework for generalisation
+                    bridge.mediaEvent.emit(MEvent.PLAYPAUSE)
         elif txt=="Music":
             for s in state._state.getChain():
                 if isinstance(s,TalkState):
-                    bridge.mediaEvent.emit(MEvent.START)
-                    sendPreviews()
-                    return
+                    bridge.mediaEvent.emit(MEvent.PLAYPAUSE)
         elif txt=="Thanks":
             for s in state._state.getChain():
                 if isinstance(s,TalkState):

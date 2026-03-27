@@ -246,4 +246,19 @@ function selectMode(mode){
 function selectSubMode(mode){
   document.querySelectorAll(".SubMode").forEach(cont=>cont.style.display=cont.id==mode?"":"none")
 }
+/*
+socket.on('disconnect', (reason) => {
+    console.log("Connection lost:", reason);
+    showAlertUser("You are offline. Trying to reconnect...");
+});
 
+// Triggered when the connection is successfully restored
+socket.on('connect', () => {
+    hideAlertUser();
+    console.log("Connected to server!");
+});
+
+// Optional: Specific handling for manual reconnections
+socket.on('reconnect_attempt', () => {
+    console.log("Attempting to reconnect...");
+});*/

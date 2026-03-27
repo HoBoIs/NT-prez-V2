@@ -154,6 +154,13 @@ class MainWindow(QWidget):
                 self.state.media=MediaInfo(m,"PLAYING",dur,self.player.position(),time.time())
                 print(self.player.duration(),"=dur")
                 self.state.mediaCache[m.path]=self.state.media
+        elif event ==MEvent.PLAYPAUSE:
+            if m_:=self.state.getMedia():
+                if m_.status=="PLAYING":
+                    self.handleMedia(MEvent.PAUSE)
+                else:
+                    self.handleMedia(MEvent.START)
+
         elif event ==MEvent.STOP:
             self.stopSong()
             if self.state.media:
@@ -190,7 +197,10 @@ class MainWindow(QWidget):
         self.player.stop()
     def playSong(self,m:MediaDescript):
         if m.isMusic:
-            self.player.setSource(QUrl.fromLocalFile(m.path))
+            if self.player.playbackState() == QMediaPlayer.PlaybackState.PausedState:
+                pass
+            else:
+                self.player.setSource(QUrl.fromLocalFile(m.path))
             self.player.play()
             pass
     def keyPressEvent(self, a0):

@@ -6,6 +6,7 @@ class MEvent(Enum):
     START=1
     STOP=2
     PAUSE=3
+    PLAYPAUSE=4
     
 
 class QtBridge(QObject):

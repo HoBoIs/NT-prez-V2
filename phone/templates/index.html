@@ -49,13 +49,17 @@
         <button onclick="send('soundSet','Stop')" id="StopBtn"> ■ </button>
         </div>
         <div class="VHalf">
-        <label id="autoplayLabel" for="autoplay" > Autoplay::
+          <div class="FLX">
+        <label id="autoplayLabel" for="autoplay" > Autoplay:
         <input type="checkbox" id="autoplay" onchange="send('soundSet','Auto:'+this.checked)" />
 </label>
+          </div>
         <div id="MusicStatus">  </div>
+          <div class="FLX">
         <label id="volumeLabel" for="volume" > 🔊
 </label>
         <input type="range" id="volume" name="volume" min="0" max="100" onchange="send('soundSet','Volume:'+this.value)" />
+          </div>
         </div>
       </div>
       <input type="search" id="MusicFilter" placeholder=" " class="search">

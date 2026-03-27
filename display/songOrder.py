@@ -235,6 +235,8 @@ class SongOrderEditor(ListEdit):
         
     def writeToState(self):
         res :list[SongOrderItemType|None] =[(s.getItem()[1]) for s in self.ls]
+        res = [w.getItem()[1] for w in self.getWidgets() if isinstance(w,ItemEdit)]
+        
         #for i,s in enumerate(self.ls):
         #    res+=[s.getConstructor()]
         with self.ts._lock:

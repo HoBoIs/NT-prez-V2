@@ -52,6 +52,7 @@ class ReorderContainer(QWidget):
     def addWidget(self, w:QWidget):
         self.last=w
         self.layout_.addWidget(w)
+        self.setOrders()
     def dragEnterEvent(self, a0):
         if a0:
             a0.accept()
@@ -83,9 +84,19 @@ class ReorderContainer(QWidget):
         self.layout_.removeWidget(self.draggedWidget)
         self.layout_.insertWidget(tIdx, self.draggedWidget)
         self.draggedWidget = None
+        self.setOrders()
         a0.accept()
     def isLast(self,w:QWidget):
         return w is self.last
+    def setOrders(self):
+        items = [self.layout_.itemAt(i) for i in range(self.layout_.count())]
+        widgets = [i.widget() for i in items if i and i.widget()]
+        idx=1
+        for w in widgets:
+            if isinstance(w,ListItem) and not self.isLast(w):
+                w.handle.setNumber(idx)
+                idx+=1
+
 
 class DragHandle(QLabel):
     def __init__(self, parent=None):
@@ -116,8 +127,10 @@ class DragHandle(QLabel):
         mime = QMimeData()
         mime.setText("reorder")
         drag.setMimeData(mime)
-
         drag.exec(Qt.DropAction.MoveAction)
+    def setNumber(self,i:int):
+        super().setText('≡ {:3d}'.format(i))
+
 from abc import ABCMeta, abstractmethod
 from typing import Type, Any, cast
 QABCMeta = cast(Type[Any], type("QABCMeta", (type(QObject), ABCMeta), {}))
@@ -198,6 +211,12 @@ class ListEditHless(QScrollArea,Generic[MyWidget]):
         self.last=self.makeLast()
         self.last.onChangedData.connect(self.onLastEdited)
         self.container.addWidget(self.last)
+    def getWidgets(self)->list[ListItem]:
+        items = [self.container.layout_.itemAt(i) for i in range(self.container.layout_.count())]
+        widgets = [i.widget() for i in items if i and i.widget()]
+        widgets = [w for w in widgets if isinstance(w,ListItem)]
+        return widgets
+
 
 
     
@@ -205,8 +224,12 @@ class ListEditHless(QScrollArea,Generic[MyWidget]):
 
 class ListEdit(QWidget):
     layout_:QVBoxLayout
-    def __init__(self, parent: QWidget|None, header:QWidget, data:QWidget ) :
+    d:ListEditHless
+    def __init__(self, parent: QWidget|None, header:QWidget, data:ListEditHless ) :
         super().__init__(parent)
+        self.d=data
         self.layout_=QVBoxLayout(self)
         self.layout_.addWidget(header)
         self.layout_.addWidget(data)
+    def getWidgets(self):
+        return self.d.getWidgets()

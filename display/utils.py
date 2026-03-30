@@ -1,6 +1,7 @@
 from typing import Callable, List
+from PyQt6.QtWidgets import QGraphicsOpacityEffect
 from typing import TypeVar,Generic
-from PyQt6.QtGui import QMouseEvent, QDrag
+from PyQt6.QtGui import QMouseEvent, QDrag,QCursor
 from PyQt6.QtCore import QObject, QTimer, Qt,QMimeData, pyqtSignal
 from PyQt6.QtWidgets import QCheckBox, QFrame,QComboBox, QGridLayout, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget, QLabel
 from PyQt6.QtGui import QWheelEvent
@@ -41,7 +42,8 @@ class ReorderContainer(QWidget):
     layout_:QVBoxLayout
     draggedWidget:None|QWidget
     last:QWidget | None
-    def __init__(self):
+    p:'ListEditHless'
+    def __init__(self, p : 'ListEditHless'):
         super().__init__()
         self.setAcceptDrops(True)
         self.layout_=QVBoxLayout(self)
@@ -49,6 +51,7 @@ class ReorderContainer(QWidget):
         self.layout_.setContentsMargins(0,0,0,0)
         self.draggedWidget = None
         self.last = None
+        self.p=p
     def addWidget(self, w:QWidget):
         self.last=w
         self.layout_.addWidget(w)
@@ -125,8 +128,11 @@ class DragHandle(QLabel):
 
         drag = QDrag(self)
         mime = QMimeData()
-        mime.setText("reorder")
+        mime.setText("reorder with drag")
         drag.setMimeData(mime)
+        pixmap=widget.grab()
+        drag.setPixmap(pixmap)
+        drag.setHotSpot(widget.mapFromGlobal(QCursor.pos()))
         drag.exec(Qt.DropAction.MoveAction)
     def setNumber(self,i:int):
         super().setText('≡ {:3d}'.format(i))
@@ -142,6 +148,7 @@ class ListItem(QFrame,metaclass=QABCMeta):
     changed: bool
     handle: DragHandle
     onChangedData = pyqtSignal()
+    toDelete:bool
     def __init__(self, parent=None):
         super().__init__(parent)
         self.container=QWidget()
@@ -153,9 +160,24 @@ class ListItem(QFrame,metaclass=QABCMeta):
         self.saver=SaveBtns()
         self.handle=DragHandle()
         self.changed=False
+        self.toDelete=False
         self.saver.acceptBtn.pressed.connect(self.save)
         self.saver.cancelBtn.pressed.connect(self.cancelEdit)
-
+        self.saver.deleteBtn.pressed.connect(self.markForDelete)
+    def markForDelete(self):
+        self.toDelete=True
+        for i in range(self.layout_.count()):
+            tmp= self.layout_.itemAt(i)
+            c = tmp.widget() if tmp else None
+            if c!=None and (c not in [self.saver]):
+                effect = QGraphicsOpacityEffect(c)
+                effect.setOpacity(0.1)
+                c.setGraphicsEffect(effect)
+                print(tmp,'--',c)
+            else:
+                print(tmp,'--',c)
+        self.updateSaveBtns()
+        pass
     @abstractmethod
     def isChanged(self)->bool:
         pass
@@ -169,14 +191,44 @@ class ListItem(QFrame,metaclass=QABCMeta):
     def setOrder(self,v:int)->None:
         pass
     @abstractmethod
+    def saveUpdate(self) -> bool:
+        pass
     def save(self):
-        pass
+        if self.toDelete:
+            self.callDelete()
+            return
+        if self.saveUpdate():
+            self.updateSaveBtns()
+            self.callEditorToSave()
     @abstractmethod
-    def cancelEdit(self):
+    def restore(self):
         pass
+    def cancelEdit(self):
+        self.restore()
+        self.toDelete=False
+        for i in range(self.layout_.count()):
+            tmp= self.layout_.itemAt(i)
+            c = tmp.widget() if tmp else None
+            if c!=None:
+                c.setGraphicsEffect(None)
+        self.updateSaveBtns()
+    def callDelete(self):
+        p=self.parent()
+        if isinstance(p,ReorderContainer):
+            p.layout_.removeWidget(self)
+            self.callEditorToSave()
+            self.deleteLater()
+            p.setOrders()
+
     def updateSaveBtns(self):
         self.changed=self.isChanged()
         self.saver.setChanged(self.changed)
+    def callEditorToSave(self):
+        p=self.parent()
+        assert isinstance(p,ReorderContainer)
+        pp=p.p
+        pp.callEditorToSave(self)
+        
 
 
 
@@ -189,7 +241,7 @@ class ListEditHless(QScrollArea,Generic[MyWidget]):
     def __init__(self, parent: QWidget | None, childs :List[MyWidget], makeLast:Callable[[],MyWidget] ):
         super().__init__(parent)
         self.setWidgetResizable(True)
-        self.container = ReorderContainer()
+        self.container = ReorderContainer(self)
         self.setWidget(self.container)
 
         for w in childs:
@@ -216,6 +268,10 @@ class ListEditHless(QScrollArea,Generic[MyWidget]):
         widgets = [i.widget() for i in items if i and i.widget()]
         widgets = [w for w in widgets if isinstance(w,ListItem)]
         return widgets
+    def callEditorToSave(self,caller:ListItem):
+        p=self.parent()
+        assert isinstance(p,ListEdit)
+        p.saveEvent(caller)
 
 
 
@@ -231,5 +287,7 @@ class ListEdit(QWidget):
         self.layout_=QVBoxLayout(self)
         self.layout_.addWidget(header)
         self.layout_.addWidget(data)
-    def getWidgets(self):
+    def getWidgets(self)->list[ListItem]:
         return self.d.getWidgets()
+    def saveEvent(self,caller:ListItem):
+        pass

@@ -230,10 +230,8 @@ class TalkEdit(ListItem):
     mediaIn: MediaEditor
     oldTalk:Talk
     data:dataContainer
-    oss:Callable
-    def __init__(self, t:Talk,data:dataContainer, conf:Config,onSaveState:Callable):
+    def __init__(self, t:Talk,data:dataContainer, conf:Config):
         super().__init__()
-        self.oss=onSaveState
         self.data=data
         self.oldTalk=t
         #self.layout_.setHorizontalSpacing(0)
@@ -284,7 +282,7 @@ class TalkEdit(ListItem):
         tmp=self.getTalk()
         tmp._id=self.oldTalk._id
         tmp.orderIDX=self.oldTalk.orderIDX
-        return self.oldTalk!=tmp
+        return self.toDelete or self.oldTalk!=tmp
     def getID(self) -> int:
         return self.oldTalk._id
     def setID(self,v):
@@ -294,15 +292,13 @@ class TalkEdit(ListItem):
         self.onChangedData.emit()
     def setOrder(self, v: int) -> None:
         self.oldTalk.orderIDX=v
-    def save(self):
+    def saveUpdate(self):
         newTalk=self.getTalk()
         self.data.talks[self.oldTalk._id]=newTalk
         self.oldTalk=newTalk
-        self.onChange()
-        self.oss()
-    def cancelEdit(self):
+        return True
+    def restore(self):
         self.initFields()
-        self.onChange()
 
 
 class TalkHeader(QWidget):
@@ -326,10 +322,13 @@ class TalkHeader(QWidget):
 
 class TalkListEdit(ListEdit):
     state:TopState
-    os:Callable
-    def __init__(self, parent: QWidget|None, s:TopState,c:Callable) :
+    def __init__(self, parent: QWidget|None, s:TopState) :
         self.state=s
-        self.os=c
         super().__init__(parent,TalkHeader(),
-                         ListEditHless(None,[TalkEdit(t,s.data,s.cfg,c) for t in s.data.talks.values()],
-                                       lambda: TalkEdit(makeFakeTalk()  ,s.data,s.cfg,c)))
+                         ListEditHless(None,[TalkEdit(t,s.data,s.cfg) for t in s.data.talks.values()],
+                                       lambda: TalkEdit(makeFakeTalk()  ,s.data,s.cfg)))
+    def saveEvent(self,caller:ListItem):
+        p=self.parent()
+        from display.setupWindow import SetupWindow
+        if isinstance(p,SetupWindow):
+            p.sendUpdate()

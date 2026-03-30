@@ -27,9 +27,9 @@ class SetupWindow(QWidget):
         self.state=s
         self.layout_=QGridLayout(self)
         self.setLayout(self.layout_)
-        self.tle=TalkListEdit(self,s,self.sendUpdate)
+        self.tle=TalkListEdit(self,s)
         #soe=ItemEdit(s.data,self.state.cfg)
-        self.soe=SongOrderEditor(None,s.data,self.state.cfg,self.state,self.sendUpdate)
+        self.soe=SongOrderEditor(None,s.data,self.state.cfg,self.state)
         self.parts=[self.soe,self.tle]
 
         self.layout_.addWidget(self.tle,0,0)

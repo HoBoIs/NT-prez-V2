@@ -30,7 +30,7 @@ class PasteAwareLineEdit(QLineEdit):
                         grandparent = p.parentWidget()
                     else:
                         grandparent=None
-                    if isinstance(grandparent,ItemEdit):
+                    if isinstance(grandparent,SOListItem):
                         grandparent.handle_multiline_paste(lines)
                         return  
         super().keyPressEvent(a0)
@@ -105,7 +105,7 @@ class FilterableComboBox(NoWheelComboBox):
         self.addItem(text, obj)
 
 
-class ItemEdit(ListItem):
+class SOListItem(ListItem):
     nameIn: NoWheelComboBox
     kindIn: NoWheelComboBox
     wasBefore: QCheckBox
@@ -117,7 +117,6 @@ class ItemEdit(ListItem):
     #items:list
     selected:tuple[str,None|SongOrderItemType]
 
-    onSave:Callable
     def handle_multiline_paste(self,lines):
         self.nameIn.setCurrentText(self.nameIn.currentText()+lines[0])
         if len(lines)==1:
@@ -127,16 +126,15 @@ class ItemEdit(ListItem):
             index = container.layout_.indexOf(self)
 
             for i, line in enumerate(lines[1:], start=1):
-                new_widget = ItemEdit(self.data,self.conf,self.onSave)
+                new_widget = SOListItem(self.data,self.conf)
                 new_widget.nameIn.setCurrentText(line)
                 container.layout_.insertWidget(index + i, new_widget)
             if container.layout_.count()==index+len(lines):
-                new_widget = ItemEdit(self.data,self.conf,self.onSave)
+                new_widget = SOListItem(self.data,self.conf)
                 container.layout_.addWidget( new_widget)
 
-    def __init__(self, data:dataContainer, conf:Config,onSave:Callable,st=""):
+    def __init__(self, data:dataContainer, conf:Config,st=""):
         super().__init__()
-        self.onSave=onSave
         self.data=data
         self.selected=("",None)
         self.conf=conf
@@ -174,7 +172,7 @@ class ItemEdit(ListItem):
             data=None
         return (name,data)
     def isChanged(self)->bool:
-        return self.selected!=self.getItem()
+        return self.toDelete or self.selected!=self.getItem()
     def getID(self)->int:#szerep ott lesz ha lesz verszsza-sorrend variálás
         if self.selected[1]:
             return 0
@@ -183,17 +181,17 @@ class ItemEdit(ListItem):
         pass
     def setOrder(self,v:int)->None:
         pass
-    def save(self):
+    def saveUpdate(self) -> bool:
         if self.getItem()[1]:
             self.selected=self.getItem()
-            self.updateSaveBtns()
-            self.onSave()
-    def cancelEdit(self):
+            return True
+        return False
+    def restore(self):
         self.nameIn.setCurrentText(self.selected[0])
-        pass
     def onChange(self):
         self.updateSaveBtns()
         self.onChangedData.emit()
+
     """def getConstructor(self):
         i=self.selected
         if i[1]:
@@ -220,30 +218,27 @@ from state.songOrderIO import writeSongOrder
 class SongOrderEditor(ListEdit):
     data:dataContainer
     conf:Config
-    ls:list[ItemEdit]
     ts:TopState
-    os:Callable
-    def __init__(self,parent,d:dataContainer,c:Config,s:TopState, onSave:Callable):
+    def __init__(self,parent,d:dataContainer,c:Config,s:TopState):
         self.data=d
         self.ts=s
         self.conf=c
-        self.ls=[ItemEdit(self.data,self.conf,self.writeToState,x.title) for x in d.songOrder]
+        ls=[SOListItem(self.data,self.conf,x.title) for x in d.songOrder]
         super().__init__(parent,Header(),
-                         ListEditHless(None,self.ls,lambda: ItemEdit(self.data,self.conf,self.writeToState)
+                         ListEditHless(None,ls,lambda: SOListItem(self.data,self.conf)
                          ))
-        self.os=onSave
         
-    def writeToState(self):
-        res :list[SongOrderItemType|None] =[(s.getItem()[1]) for s in self.ls]
-        res = [w.getItem()[1] for w in self.getWidgets() if isinstance(w,ItemEdit)]
+    def saveEvent(self,caller:ListItem):
+        res = [w.getItem()[1] for w in self.getWidgets() if isinstance(w,SOListItem)]
         
         #for i,s in enumerate(self.ls):
         #    res+=[s.getConstructor()]
         with self.ts._lock:
             self.data.songOrder=[SongOrderItem (r) for r in res if r]
-        #p=self.parent()
-        #from display.setupWindow import SetupWindow
-        #if isinstance(p,SetupWindow):
-        #    p.sendUpdate()
-        self.os()
+
+        p=self.parent()
+        from display.setupWindow import SetupWindow
+        if isinstance(p,SetupWindow):
+            p.sendUpdate()
+
         writeSongOrder("./res/songOrder.json",self.data.songOrder)

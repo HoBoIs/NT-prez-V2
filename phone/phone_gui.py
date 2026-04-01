@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from flask import Flask,request,render_template
 from flask_socketio import SocketIO, emit
 import json
@@ -30,13 +30,43 @@ def shouldIgnore(ip,gottime):
     lastUsedTime=time.time()
     return False
 volume=0
+
+@dataclass
+class ElementItem:
+    text : str
+    kind:str
+    titles: None | list[str] 
+    basicSearchData: str 
+    detailedSearchData: str
+    music: None | str 
+    parts:None | list["ElementItem"] 
+    def __init__(self,kind:str,text:str,parts:list["ElementItem"]|None=None,titles:list[str]|None=None,basicSearchData:str|None=None,detailedSearchData:str|None=None,music:str|None=None) -> None:
+        self.kind=kind
+        self.text=text
+        self.parts=parts
+        self.titles=titles
+        if basicSearchData != None:
+            self.basicSearchData= basicSearchData
+        elif titles != None:
+            self.basicSearchData="|".join(titles)
+        else:
+            self.basicSearchData=text
+        if detailedSearchData != None:
+            self.detailedSearchData=detailedSearchData
+        elif parts:
+            self.detailedSearchData=self.basicSearchData+"|"+"|".join([p.detailedSearchData for p in parts])
+        else:
+            self.detailedSearchData=self.basicSearchData
+        self.music=music
+
+
 @dataclass
 class ComState:
-    songs:list[dict[str,str|list[str]]]
-    talks:list[dict[str,str|list[str]]]
-    music:list[dict[str,str]]
+    songs:list[ElementItem]
+    talks:list[ElementItem]
+    music:list[ElementItem]
     templates:list[dict[str,str]]
-    songOrder:list[dict[str,str|list[str]]]
+    songOrder:list[ElementItem]
     idxs:list[int]
     mode:str=""
     def __init__(self,st:topState.TopState):
@@ -59,38 +89,27 @@ def init(ts :topState.TopState,b:QtBridge):
     state=ts
     global lstate
     lstate=ComState(state)
-def transformTalk(t:Talk)->dict[str,str|list[str]]:
-    res:dict[str,str|list[str]] ={}
-    res["text"]=t.name+" | "+t.title
-    res["searchData"]=res["text"]
-    res["parts"]=[t.title+" "+t.name]+[p for p in t.pictures]
-    if t.pictures:
-        res["parts"]+=[t.title+" "+t.name]
-    if t.thanks[0].verses:
-        res["parts"]+=[t.thanks[0].titles[0]+"\n"+",".join(t.thanks[1])]
-    res["music"]=t.media.path
-    return res
+def transformTalk(t:Talk)->ElementItem:
+    parts=[ElementItem("Title",t.title+" "+t.name)] +\
+            [ElementItem("Picture", p) for p in t.pictures]+\
+            ([ElementItem("Title", t.title+" "+t.name)] if t.pictures else []) +\
+            ([ElementItem("Song",t.thanks[0].titles[0]+ "|" + ",".join (t.thanks[1]) )] if t.thanks[0].titles else []) +\
+            ([ElementItem("Song",t.media.musicSong)] if t.media.musicSong else [])
 
-def transformSongOrder(s:topState.SongOrderItem, d:topState.dataContainer) -> dict[str,str|list[str]]:
-    res:dict[str,str|list[str]] ={}
+    return ElementItem("talk",t.name+" | "+t.title,parts,music=(t.media.path if t.media.path else None ))
+
+def transformSongOrder(s:topState.SongOrderItem, d:topState.dataContainer) -> ElementItem:
     match s.data:
         case Song():
-            res=transformSong(d.songs[s._id])
+            return transformSong(d.songs[s._id])
         case Talk():
-            res=transformTalk(d.talks[s._id])
+            return transformTalk(d.talks[s._id])
         case _:
             assert_never(data)
-    res["kind"]=s.kind
-    return res
-def transformSong(s:Song):
-    res:dict[str,str|list[str]] ={}
-    res["text"]=s.titles[0]
-    res["titles"]=s.titles
-    res["verses"]=s.verses
-    #res["searchData"]="\n".join(s.titles)+"\n---\n"+"\n\n".join(s.verses)
-    return res
-def transformMusic(m:str):
-    return {"text":m,"searchData":m}
+def transformSong(s:Song) -> ElementItem:
+    return ElementItem("song",s.titles[0],[ElementItem("verse",v) for v in s.verses],s.titles)
+def transformMusic(m:str) -> ElementItem:
+    return ElementItem("Music",m,music=m)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -102,15 +121,15 @@ def index():
     return render_template("index.html")
 
 def sendSongOrder(broadcast=False):
-    emit("songOrder",lstate.songOrder,broadcast=broadcast)
+    emit("songOrder",[asdict(s) for s in lstate.songOrder],broadcast=broadcast)
 def sendSongs(broadcast=False):
-    emit("songs",lstate.songs,broadcast=broadcast)
+    emit("songs",[asdict(s) for s in lstate.songs],broadcast=broadcast)
 def sendTemplates(broadcast=False):
     emit("templates",lstate.templates,broadcast=broadcast)
 def sendTalks(broadcast=False):
-    emit("talks",lstate.talks,broadcast=broadcast)
+    emit("talks",[asdict (s) for s in lstate.talks],broadcast=broadcast)
 def sendMusics(broadcast=False):
-    emit("musics",lstate.talks,broadcast=broadcast)
+    emit("musics",[asdict(s) for s in lstate.talks],broadcast=broadcast)
 def onchange(kind):
     pass
 @socketio.on("connect")
@@ -244,10 +263,10 @@ def sendTalk(data):
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
-        pres_idx=data['indexes'][0]
-        pres_txt=data['text']
+        pres_idx:int=data['indexes'][0]
+        pres_txt:str=data['text']
 
-        if lstate.talks[pres_idx]['text']!=pres_txt:
+        if lstate.talks[pres_idx].text!=pres_txt:
             sendTalks()
             return
         state._state=TalkState(state,state.data.talks[pres_idx])
@@ -269,10 +288,11 @@ def sendsongOrder(data):
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
-        pres_idx=data['indexes'][0]
-        pres_txt=data['text']
-        if lstate.songOrder[pres_idx]['text']!=pres_txt:
-            print( lstate.songOrder[pres_idx]['text'],pres_txt)
+        pres_idx:int=data['indexes'][0]
+        pres_txt:str=data['text']
+        print(data)
+        if lstate.songOrder[pres_idx].text!=pres_txt:
+            print( lstate.songOrder[pres_idx].text,pres_txt)
             sendSongOrder()
             return
         state._state=SongOrder(state,[x.cnst for x in state.data.songOrder])
@@ -304,9 +324,9 @@ def sendsong(data):
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
             return 
-        pres_idx=data['indexes'][0]
-        pres_txt=data['text']
-        if lstate.songs[pres_idx]['text']!=pres_txt:
+        pres_idx:int=data['indexes'][0]
+        pres_txt:str=data['text']
+        if lstate.songs[pres_idx].text !=pres_txt:
             sendSongs()
             return
         state._state=ClampedSongState(state,

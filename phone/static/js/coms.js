@@ -1,3 +1,10 @@
+// @ts-check
+/** @type {typeof import("socket.io-client").io} */
+const io = window.io;
+
+/**
+ * @param {string} orig
+ */
 function sanitize(orig){
   return orig .toLowerCase()
               .normalize("NFD")
@@ -5,6 +12,10 @@ function sanitize(orig){
               .replace(/[^a-z0-9]/g,"")
 }
 
+/**
+ * @param {string} chanel
+ * @param {{ text?: any; indexes?: number[] | any[]; sent_at?: any; }} msg
+ */
 function send(chanel,msg){
   if (typeof(msg)=='string'){
     msg={'text':msg}
@@ -13,40 +24,31 @@ function send(chanel,msg){
   socket.emit(chanel, JSON.stringify(msg));
 }
 
-const socket = io();
-//async function loadData(chanel,data,contID){
-function loadData(chanel,data,contID){
-  const items = data
-  const cont=document.getElementById(contID)
-  cont.innerHTML=""
-
-  for (let i=0; i<items.length; i++){
-    const btn=document.createElement("button");
-    btn.innerHTML = "<div>"+items[i].text+"</div>";
-    btn.data = items[i]
-    btn.searchData=items[i].text
-    btn.onclick = () => 
-      send(chanel,{"text":items[i].text,"indexes":[i]})
-    cont.appendChild(btn);
-    /*if (btn.data!=btn.innerText && chanel=="songSet"){
-      const subBtn=document.createElement("button");
-      const dv=document.createElement("div");
-      dv.innerText=btn.data.titles.join('\n')+"\n---\n"+btn.data.verses.join('\n')
-      dv.dataShow="none"
-      subBtn.innerText="👁"
-      subBtn.onclick=(event)=>{
-        event.stopPropagation()
-        dv.dataShow=dv.dataShow=="none"?"":"none"
-        dv.style.display=dv.dataShow
-      }
-      dv.style.display="none"
-      btn.appendChild(subBtn)
-      cont.appendChild(dv)
-    }*/
-  }
+class ElementItem{
+  /** @type {string} */ text 
+  /** @type {string} */ kind 
+  /** @type {string[]|null} */ titles 
+  /** @type {string} */ basicSearchData 
+  /** @type {string} */ detailedSearchData
+  /** @type {string | null} */ music
+  /** @type {ElementItem[] | null} */ parts
 }
-function loadItem(cont,btn,chanel,idx,inner,partList){
-  const text=btn.data.text
+
+const socket = io();
+
+/**
+ * @param {HTMLElement} cont
+ * @param {string} chanel
+ * @param {any} idx
+ * @param {ElementItem} data
+ */
+function loadItem(cont,chanel,idx,data){
+  const btn=document.createElement("button");
+  btn.innerHTML = "<div>"+data.text+"</div>";
+  btn.dataset.kind=data.kind
+  btn.dataset.detailedSearchData=sanitize(data.detailedSearchData)
+  btn.dataset.basicSearchData=sanitize( data.basicSearchData)
+  const text=data.text
   //!!!btn.searchData
   btn.onclick = () => 
     send(chanel,{"text":text,"indexes":[idx,0]})
@@ -54,83 +56,39 @@ function loadItem(cont,btn,chanel,idx,inner,partList){
   cont.appendChild(btn);
   const subBtn=document.createElement("button");
   const dv=document.createElement("div");
-  if (inner != text){
+  if (data.titles != null && data.titles?.length > 1){
     const dvTop=document.createElement("button")
     dv.appendChild(dvTop)
-    dvTop.innerHTML=inner
+    dvTop.innerHTML=data.titles.join("|")
     dvTop.onclick = () => 
     send(chanel,{"text":text,"indexes":[idx,0]})
   }
-  for (let j=0; j<partList.length; j+=1){
-    const b=document.createElement("button")
-    b.id= 'Subpart|'+chanel+'|'+idx+';'+j
-    b.onclick=()=>
-      send(chanel,{"text":text,"indexes":[idx,j]})
-    b.innerText=partList[j]
-    dv.appendChild(b)
+  if (data.parts!=null){
+    for (let j=0; j<data.parts?.length; j+=1){ //TODO proper recursive load
+      const b=document.createElement("button")
+      b.id= 'Subpart|'+chanel+'|'+idx+';'+j
+      b.onclick=()=>
+        send(chanel,{"text":text,"indexes":[idx,j]})
+      b.innerText=data.parts[j].text
+      dv.appendChild(b)
+    }
   }
-  /*if (btn.data.music+"" != "undefined" && btn.data.music.split(/[/\\]/).pop() != ''){
-    const b=document.createElement("button")
-    b.onclick=()=>
-      send(chanel,{"text":btn.data.music.split(/[/\\]/).pop(),"index":idx,"verseIdx":0})
-    b.innerText="Zene: " + btn.data.music.split(/[/\\]/).pop()
-    dv.appendChild(b)
-  }*/
-  dv.dataShow="none"
+  dv.dataset.show="none"
   subBtn.innerText="👁"
   subBtn.onclick=(event)=>{
     event.stopPropagation()
-    dv.dataShow=dv.dataShow=="none"?"":"none"
-    dv.style.display=dv.dataShow
+    dv.dataset.show=dv.dataset.show=="none"?"":"none"
+    dv.style.display=dv.dataset.show
   }
   dv.style.display="none"
   btn.appendChild(subBtn)
   cont.appendChild(dv)
+  return btn
 }
-function loadTalk(cont,btn,chanel,idx){
-  const text=btn.data.text
-  btn.searchData=text
-  loadItem(cont, btn, chanel, idx, text, btn.data.parts)
-}
-function loadSong(cont,btn,chanel,idx){
-  const text=btn.data.text
-  btn.searchData=sanitize(btn.data.titles.join(""))+"¤"+sanitize(btn.data.verses.join(""))
-  loadItem(cont, btn, chanel, idx, btn.data.titles.join(' | ') , btn.data.verses)
-}
-socket.on("songSelected", (data) =>{
-//songidx,vidx
-  var tmp
-  var nx
-  var prv
-  document.querySelectorAll(".HLT").forEach(b=>b.classList.remove("HLT") );
-  const SF=document.getElementById("SongScroll")
-  SF.children[2*data['songidx']].classList.add("HLT")
-  const vs=SF.children[2*data['songidx']].data.verses
-  if (data['vidx']>=0 && data['vidx']<vs.length)
-    SF.children[2*data['songidx']+1].children[data['vidx']+1].classList.add("HLT")
-  /*if (data['vidx']>0)
-    prv=vs[data['vidx']-1].split('\n')[0]
-  else if (data['vidx']==0)
-    prv="Dal elötti üres"
-  else {
-    if (data['songidx']==0){
-      tmp=SF.children[SF.children.length-2].data.verses
-    }else{
-      tmp=SF.children[2*(data['songidx']-1)].data.verses
-    }
-    prv=tmp[tmp.length-1].split('\n')[0]
-  }
-  if (data['vidx']<vs.length-1)
-    nx=vs[data['vidx']+1].split('\n')[0]
-  else 
-    nx="Dal utáni logó"
-  document.querySelectorAll(".PrevNote").forEach(x=> x.innerText=prv)
-  document.querySelectorAll(".NextNote").forEach(x=> x.innerText=nx)
-*/})
 
-
-
-
+/**
+ * @param {{ name: string; infoDate: number; status: string; age: number; length: number; }} m
+ */
 function makeMediaDataStr(m){
   if (m.name=="-") return "0:0"
   console.log(m)
@@ -142,110 +100,140 @@ function makeMediaDataStr(m){
   }
   return Math.round(m.age+t)+":"+Math.round( m.length)
 }
-musicInterval="a"
+
+let musicInterval=-1
 
 socket.on('previews',d=>{
-  document.querySelectorAll(".PrevNote").forEach(x=> x.innerText=d.prev)
-  document.querySelectorAll(".ActNote").forEach(x=> x.innerText=d.act)
-  document.querySelectorAll(".NextNote").forEach(x=> x.innerText=d.next)
-  document.querySelectorAll(".MediaNameNote").forEach(x=> x.innerText= d.media.name.split(/[/\\]/).pop() )
-  songMedia=d.media
-  document.querySelectorAll(".MediaDataNote").forEach(x=> x.innerText=makeMediaDataStr(d.media))
+  document.querySelectorAll(".PrevNote").forEach(x=> {if (x instanceof HTMLElement) x.innerText=d.prev})
+  document.querySelectorAll(".ActNote").forEach(x=> {if (x instanceof HTMLElement)x.innerText=d.act})
+  document.querySelectorAll(".NextNote").forEach(x=> {if (x instanceof HTMLElement)x.innerText=d.next})
+  document.querySelectorAll(".MediaNameNote").forEach(x=> {if (x instanceof HTMLElement) x.innerText= d.media.name.split(/[/\\]/).pop() })
+  const songMedia=d.media
+  document.querySelectorAll(".MediaDataNote").forEach(x=> {if (x instanceof HTMLElement)x.innerText=makeMediaDataStr(d.media)})
   if ( musicInterval!=7){
     clearInterval(musicInterval)
   }
   if (d.media.status=="PLAYING")
   musicInterval= setInterval(() => {
-      document.querySelectorAll(".MediaDataNote").forEach(x=> x.innerText = makeMediaDataStr(songMedia));
+      document.querySelectorAll(".MediaDataNote").forEach(x=> {if (x instanceof HTMLElement)x.innerText = makeMediaDataStr(songMedia)});
   }, 1000);
 
   document.querySelectorAll(".HLT").forEach(x=>x.classList.remove("HLT"))
-  if (document.getElementById("MainBtn|"+d.mode+"Set|"+d.indexes[0]))
-    document.getElementById("MainBtn|"+d.mode+"Set|"+d.indexes[0]).classList.add("HLT")
-  if (d.indexes.length>1 && document.getElementById("Subpart|"+d.mode+"Set|"+d.indexes[0]+";"+d.indexes[1]))
-    document.getElementById("Subpart|"+d.mode+"Set|"+d.indexes[0]+";"+d.indexes[1]).classList.add("HLT")
+  const tmp=document.getElementById("MainBtn|"+d.mode+"Set|"+d.indexes[0])
+  if (tmp)
+    tmp.classList.add("HLT")
+  const tmp2=d.indexes.length>1 && document.getElementById("Subpart|"+d.mode+"Set|"+d.indexes[0]+";"+d.indexes[1])
+  if (tmp2)
+    tmp2.classList.add("HLT")
   
   
 })
 socket.on("volume",v =>{
-  document.getElementById("volume").value=v
+  /** @type {HTMLInputElement} */
+  // @ts-ignore
+  const vctrl=document.getElementById("volume")
+  vctrl.value=v
 })
 socket.on("Auto",v =>{
+  // @ts-ignore
   document.getElementById("autoplay").checked =v
 })
 
 socket.on("songOrder",data =>{
+  /** @type {ElementItem[]} */
   const items = data
   const cont=document.getElementById("SongOrderScroll")
+  if (cont==null)
+    return
   cont.innerHTML=""
 
   for (let i=0; i<items.length; i++){
-    const btn=document.createElement("button");
-    btn.innerHTML = "<div>"+items[i].text+"</div>";
-    btn.data = items[i]
-    if (btn.data.kind=="song"){
-      loadSong(cont,btn,"songOrderSet",i)
-    }else if (btn.data.kind=="talk"){
-      loadTalk(cont,btn,"songOrderSet",i)
-    }
+    loadItem(cont, "songOrderSet", i, items[i])
   }
 })
 socket.on("songs",songs =>{
-  //loadData("songSet", songs, "SongScroll")
+  /** @type {ElementItem[]} */
   const items = songs
   const cont=document.getElementById("SongScroll")
+  if (cont==null) return
   cont.innerHTML=""
 
   for (let i=0; i<items.length; i++){
-    const btn=document.createElement("button");
-    btn.innerHTML = "<div>"+items[i].text+"</div>";
-    btn.data = items[i]
-    loadSong(cont,btn,"songSet",i )
+    loadItem(cont,"songSet",i ,items[i])
   }
 })
 
 socket.on("music",data =>{
-  loadData("musicSet", data, "MusicScroll")
+  //TODO
 })
 socket.on("talks",talks =>{
+  /** @type {ElementItem[]} */
   const items = talks
   const cont=document.getElementById("TalkScroll")
+  if (cont ==null){
+    return
+  }
   cont.innerHTML=""
 
   for (let i=0; i<items.length; i++){
-    const btn=document.createElement("button");
-    btn.innerHTML = "<div>"+items[i].text+"</div>";
-    btn.data = items[i]
-    loadTalk(cont,btn,"talkSet",i)
+    loadItem(cont,"talkSet",i ,items[i])
   }
 })
 socket.on("template",data =>{
   //TODO
 })
+/**
+ * @param {HTMLInputElement} input
+ * @param {NodeListOf<HTMLElement>} buttons
+ */
 function filterBtns(input,buttons){
   buttons.forEach(btn=>{
-    if (btn.data) {//Not the eyes
-      btn.style.display= btn.searchData.includes(sanitize(input.value))?"":"none"
-      if (""==btn.style.display)
-        btn.nextSibling.style.display=btn.nextSibling.dataShow
-      else
-        btn.nextSibling.style.display="none"
+    if (btn.dataset.detailedSearchData) {//Not the eyes
+      btn.style.display= btn.dataset.detailedSearchData.includes(sanitize(input.value))?"":"none"
+      /** @type {HTMLElement} */
+      // @ts-ignore
+      const nxt=btn.nextSibling
+      if (nxt)
+        if (""==btn.style.display)
+          // @ts-ignore
+          nxt.style.display=nxt.dataset.show
+        else
+          nxt.style.display="none"
     }
   })
 }
+/**
+ * @param {string} id
+ */
 function makeFilter(id){
+  /** @type {HTMLInputElement} */
+  // @ts-ignore
   const SF=document.getElementById(id+"Filter")
   SF.addEventListener("input",()=>
     filterBtns(SF,document.querySelectorAll("#"+id+"Scroll button"))
   )
   filterBtns(SF,document.querySelectorAll("#"+id+"Scroll button"))
 }
+/**
+ * @param {string} mode
+ */
 function selectMode(mode){
-  document.querySelectorAll(".container").forEach(cont => cont.style.display = cont.id==mode+"Cont"?"":"none")
+  /** @type {NodeListOf<HTMLElement>} */
+  const elements=document.querySelectorAll(".container")
+  elements.forEach(cont => cont.style.display = cont.id==mode+"Cont"?"":"none")
 }
+/**
+ * @param {string} mode
+ */
 function selectSubMode(mode){
-  document.querySelectorAll(".SubMode").forEach(cont=>cont.style.display=cont.id==mode?"":"none")
+  /** @type {NodeListOf<HTMLElement>} */
+  const elements=document.querySelectorAll(".SubMode")
+  elements.forEach(cont=>cont.style.display=cont.id==mode?"":"none")
 }
+
+socket.on('ping', () => {
+  console.log('ping')
+})
 /*
 socket.on('disconnect', (reason) => {
     console.log("Connection lost:", reason);

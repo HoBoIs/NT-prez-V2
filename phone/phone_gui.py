@@ -31,6 +31,9 @@ def shouldIgnore(ip,gottime):
     return False
 volume=0
 
+def getElement(ls:list[int],idx:int)->int:
+    return ls[idx] if idx<len(ls) else 0
+
 @dataclass
 class ElementItem:
     text : str
@@ -262,15 +265,16 @@ def sendTalk(data):
     with state._lock:
         data=json.loads(data)
         if (shouldIgnore(request.remote_addr,data["sent_at"])):
-            return 
-        pres_idx:int=data['indexes'][0]
+            return
+        indexes:list[int]=data['indexes']
+        pres_idx:int=indexes[0]
         pres_txt:str=data['text']
 
         if lstate.talks[pres_idx].text!=pres_txt:
             sendTalks()
             return
         state._state=TalkState(state,state.data.talks[pres_idx])
-        state._state.setIndex(data['indexes'][1])
+        state._state.setIndex(getElement( indexes,1))
         if state.media and isinstance(state.media.descript.parent,TalkState):
             p=state.media.descript.parent
             if p.talk.title == state.data.talks[pres_idx].title and p.talk.name == state.data.talks[pres_idx].name:
@@ -298,7 +302,7 @@ def sendsongOrder(data):
         state._state=SongOrder(state,[x.cnst for x in state.data.songOrder])
         state._state.setIndex(pres_idx)
         if len(data['indexes'])>1 and state._state.childState:
-            state._state.childState.setIndex(data["indexes"][1])
+            state._state.childState.setIndex(getElement(data["indexes"],1))
         #SongListState(state,list(state.data.songs.values()),pres_idx,data["verseIdx"])
         #emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         lstate.mode="songOrder"
@@ -331,7 +335,7 @@ def sendsong(data):
             return
         state._state=ClampedSongState(state,
                                       list(state.data.songs.values())[pres_idx],
-                                      Image(""),subIdx=data["indexes"][1])
+                                      Image(""),subIdx=getElement(data["indexes"],1))
         lstate.mode="song"
         lstate.idxs=data['indexes']
         #emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)

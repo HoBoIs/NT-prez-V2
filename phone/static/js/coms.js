@@ -21,6 +21,7 @@ function send(chanel,msg){
     msg={'text':msg}
   }
   msg.sent_at=Date.now();
+  console.log(msg)
   socket.emit(chanel, JSON.stringify(msg));
 }
 
@@ -41,49 +42,59 @@ const socket = io();
  * @param {string} chanel
  * @param {any} idx
  * @param {ElementItem} data
+ * @param {number[]} idxprefix
+ * @param {null | string} msg
  */
-function loadItem(cont,chanel,idx,data){
+function loadItem(cont,chanel,idx,data,idxprefix=[],msg=null){
+  if (msg==null)
+    msg=data.text
   const btn=document.createElement("button");
-  btn.innerHTML = "<div>"+data.text+"</div>";
+  // @ts-ignore
+  btn.innerHTML = "<div>"+data.text.trim().replaceAll('\n', '<br/>')+"</div>";
   btn.dataset.kind=data.kind
   btn.dataset.detailedSearchData=sanitize(data.detailedSearchData)
   btn.dataset.basicSearchData=sanitize( data.basicSearchData)
-  const text=data.text
   //!!!btn.searchData
   btn.onclick = () => 
-    send(chanel,{"text":text,"indexes":[idx,0]})
-  btn.id="MainBtn|"+chanel+"|"+idx
+    send(chanel,{"text":msg,"indexes":idxprefix.concat([idx])})
+  btn.id="Item|"+chanel+"|"+ idxprefix.concat([idx])
   cont.appendChild(btn);
-  const subBtn=document.createElement("button");
   const dv=document.createElement("div");
+  let dvEmpty=true
   if (data.titles != null && data.titles?.length > 1){
     const dvTop=document.createElement("button")
     dv.appendChild(dvTop)
     dvTop.innerHTML=data.titles.join("|")
     dvTop.onclick = () => 
-    send(chanel,{"text":text,"indexes":[idx,0]})
+    send(chanel,{"text":msg,"indexes":[idx]})
+    dvEmpty=false
   }
   if (data.parts!=null){
-    for (let j=0; j<data.parts?.length; j+=1){ //TODO proper recursive load
+    for (let j=0; j<data.parts?.length; j+=1){
+      dvEmpty=false
+      loadItem(dv, chanel, j, data.parts[j],idxprefix.concat([idx]),msg)
+      /*
       const b=document.createElement("button")
-      b.id= 'Subpart|'+chanel+'|'+idx+';'+j
+      b.id= 'Item|'+chanel+'|'+idx+';'+j
       b.onclick=()=>
         send(chanel,{"text":text,"indexes":[idx,j]})
       b.innerText=data.parts[j].text
-      dv.appendChild(b)
+      dv.appendChild(b)*/
     }
   }
-  dv.dataset.show="none"
-  subBtn.innerText="👁"
-  subBtn.onclick=(event)=>{
-    event.stopPropagation()
-    dv.dataset.show=dv.dataset.show=="none"?"":"none"
-    dv.style.display=dv.dataset.show
+  if (!dvEmpty){
+    const subBtn=document.createElement("button");
+    dv.dataset.show="none"
+    subBtn.innerText="👁"
+    subBtn.onclick=(event)=>{
+      event.stopPropagation()
+      dv.dataset.show=dv.dataset.show=="none"?"":"none"
+      dv.style.display=dv.dataset.show
+    }
+    dv.style.display="none"
+    cont.appendChild(dv)
+    btn.appendChild(subBtn)
   }
-  dv.style.display="none"
-  btn.appendChild(subBtn)
-  cont.appendChild(dv)
-  return btn
 }
 
 /**
@@ -119,10 +130,10 @@ socket.on('previews',d=>{
   }, 1000);
 
   document.querySelectorAll(".HLT").forEach(x=>x.classList.remove("HLT"))
-  const tmp=document.getElementById("MainBtn|"+d.mode+"Set|"+d.indexes[0])
+  const tmp=document.getElementById("Item|"+d.mode+"Set|"+d.indexes[0])
   if (tmp)
     tmp.classList.add("HLT")
-  const tmp2=d.indexes.length>1 && document.getElementById("Subpart|"+d.mode+"Set|"+d.indexes[0]+";"+d.indexes[1])
+  const tmp2=d.indexes.length>1 && document.getElementById("Item|"+d.mode+"Set|"+d.indexes[0]+","+d.indexes[1])
   if (tmp2)
     tmp2.classList.add("HLT")
   

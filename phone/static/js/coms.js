@@ -48,18 +48,20 @@ const socket = io();
 function loadItem(cont,chanel,idx,data,idxprefix=[],msg=null){
   if (msg==null)
     msg=data.text
+  const wrapper=document.createElement("div");
   const btn=document.createElement("button");
   // @ts-ignore
   btn.innerHTML = "<div>"+data.text.trim().replaceAll('\n', '<br/>')+"</div>";
-  btn.dataset.kind=data.kind
-  btn.dataset.detailedSearchData=sanitize(data.detailedSearchData)
-  btn.dataset.basicSearchData=sanitize( data.basicSearchData)
-  //!!!btn.searchData
+  wrapper.classList.add("Wrapper")
+  wrapper.dataset.kind=data.kind
+  wrapper.dataset.detailedSearchData=sanitize(data.detailedSearchData)
+  wrapper.dataset.basicSearchData=sanitize( data.basicSearchData)
   btn.onclick = () => 
     send(chanel,{"text":msg,"indexes":idxprefix.concat([idx])})
   btn.id="Item|"+chanel+"|"+ idxprefix.concat([idx])
-  cont.appendChild(btn);
+  wrapper.appendChild(btn);
   const dv=document.createElement("div");
+  dv.classList.add("PartsHolder")
   let dvEmpty=true
   if (data.titles != null && data.titles?.length > 1){
     const dvTop=document.createElement("button")
@@ -73,13 +75,6 @@ function loadItem(cont,chanel,idx,data,idxprefix=[],msg=null){
     for (let j=0; j<data.parts?.length; j+=1){
       dvEmpty=false
       loadItem(dv, chanel, j, data.parts[j],idxprefix.concat([idx]),msg)
-      /*
-      const b=document.createElement("button")
-      b.id= 'Item|'+chanel+'|'+idx+';'+j
-      b.onclick=()=>
-        send(chanel,{"text":text,"indexes":[idx,j]})
-      b.innerText=data.parts[j].text
-      dv.appendChild(b)*/
     }
   }
   if (!dvEmpty){
@@ -92,9 +87,18 @@ function loadItem(cont,chanel,idx,data,idxprefix=[],msg=null){
       dv.style.display=dv.dataset.show
     }
     dv.style.display="none"
-    cont.appendChild(dv)
     btn.appendChild(subBtn)
+    wrapper.appendChild(dv)
   }
+  if (data.music && false){ 
+    //Showing the music's filename can be enabled here
+    //TODO: make the musicstate's controlls here
+    //maybe if parts is null?
+    /*const dv2=document.createElement("div")
+    dv2.innerText=data.music
+    dv2.classList.add("MusicHolder")*/
+  }
+  cont.appendChild(wrapper)
 }
 
 /**
@@ -195,23 +199,13 @@ socket.on("template",data =>{
 })
 /**
  * @param {HTMLInputElement} input
- * @param {NodeListOf<HTMLElement>} buttons
+ * @param {HTMLCollection} buttons
  */
 function filterBtns(input,buttons){
-  buttons.forEach(btn=>{
-    if (btn.dataset.detailedSearchData) {//Not the eyes
-      btn.style.display= btn.dataset.detailedSearchData.includes(sanitize(input.value))?"":"none"
-      /** @type {HTMLElement} */
-      // @ts-ignore
-      const nxt=btn.nextSibling
-      if (nxt)
-        if (""==btn.style.display)
-          // @ts-ignore
-          nxt.style.display=nxt.dataset.show
-        else
-          nxt.style.display="none"
-    }
-  })
+  for (const c of buttons){
+    if (c instanceof HTMLElement && c.dataset.detailedSearchData)
+      c.style.display= c.dataset.detailedSearchData.includes(sanitize(input.value))?"":"none"
+  }
 }
 /**
  * @param {string} id
@@ -220,10 +214,15 @@ function makeFilter(id){
   /** @type {HTMLInputElement} */
   // @ts-ignore
   const SF=document.getElementById(id+"Filter")
+  const SC=document.getElementById(id+"Scroll")
+  if (SC==null)
+    return
+  const ch=SC.children
+  
   SF.addEventListener("input",()=>
-    filterBtns(SF,document.querySelectorAll("#"+id+"Scroll button"))
+    filterBtns(SF,ch)
   )
-  filterBtns(SF,document.querySelectorAll("#"+id+"Scroll button"))
+  filterBtns(SF,ch)
 }
 /**
  * @param {string} mode

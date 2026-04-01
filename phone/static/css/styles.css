@@ -20,8 +20,8 @@ html, body {
     overflow-y: auto;
     border: 1px solid #aaa;
 }
-.scrollable button div{
-  flex:14;
+.scrollable > div > button > div{
+  flex: 100;
   font-size: clamp(10px,7vw,5vh);
 
   display: grid;
@@ -31,12 +31,31 @@ html, body {
   text-overflow:ellipsis;
   height: 100%;
 }
-.scrollable button {
+.MusicHolder {
+    font-size: clamp(10px,4vw,5vh);
+}
+.PartsHolder button {
+    font-size: clamp(10px,4vw,5vh);
+  width: 100%;
+}
+.PartsHolder div {
+  width: 100%;
+    font-size: clamp(10px,4vw,5vh);
+}
+.scrollable > div > button {
+  flex: 1;
     width: 100%;
-    height: 10%;
-    font-size: clamp(10px,7vw,5vh);
+    font-size: clamp(10px,3vw,3vh);
     margin: 0px 0;
-    display: flex;
+    display:flex;
+}
+.scrollable div button button{
+  flex: 1;
+  width: auto;
+  font-size: clamp(10px,5vw,4vh);
+  text-align: center;
+  align-self: stretch;
+  float:right;
 }
 .HLT{
   border: 3px solid #888;
@@ -84,20 +103,6 @@ button:active {
 }
 button:active div{
   background-color: gray;
-}
-.scrollable div{
-  font-size: clamp(10px,3vw,3vh);
-}
-.scrollable div button{
-  font-size: clamp(10px,3vw,3vh);
-}
-.scrollable button button{
-  width: auto;
-  height: 100%;
-  font-size: 1em;
-  text-align: center;
-  float:right;
-  flex:1;
 }
 #ModeSelector{
   display: flex;

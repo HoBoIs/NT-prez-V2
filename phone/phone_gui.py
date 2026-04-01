@@ -281,7 +281,7 @@ def sendTalk(data):
                 state.media.descript.parent=state._state
                 state.media.descript.adEnfFun=state._state.toThanks
         lstate.mode="talk"
-        lstate.idxs=data['indexes']
+        lstate.idxs=data['indexes']+[0,0,0,0]
         #emit("talkSelected",{"talkidx":data['indexes']},broadcast=True)
         sendPreviews()
         bridge.stateUpdated.emit()
@@ -296,7 +296,6 @@ def sendsongOrder(data):
         pres_txt:str=data['text']
         print(data)
         if lstate.songOrder[pres_idx].text!=pres_txt:
-            print( lstate.songOrder[pres_idx].text,pres_txt)
             sendSongOrder()
             return
         state._state=SongOrder(state,[x.cnst for x in state.data.songOrder])
@@ -306,7 +305,7 @@ def sendsongOrder(data):
         #SongListState(state,list(state.data.songs.values()),pres_idx,data["verseIdx"])
         #emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         lstate.mode="songOrder"
-        lstate.idxs=data['indexes']
+        lstate.idxs=data['indexes']+[0,0,0,0]
         #print(state._state.childState)
         sendPreviews()
         bridge.stateUpdated.emit()
@@ -337,7 +336,7 @@ def sendsong(data):
                                       list(state.data.songs.values())[pres_idx],
                                       Image(""),subIdx=getElement(data["indexes"],1))
         lstate.mode="song"
-        lstate.idxs=data['indexes']
+        lstate.idxs=data['indexes']+[0,0,0,0]
         #emit("songSelected",{"songidx":data['index'],"vidx":data["verseIdx"]},broadcast=True)
         sendPreviews()
         #print(state._state.childState)

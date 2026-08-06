@@ -1,4 +1,5 @@
 from display.setupWindow import SetupWindow
+from display.songEditorWindow import SongEditorWindow
 from state.songReader import readSongs
 from state.topState import TopState, dataContainer
 import state.talk as talk
@@ -48,8 +49,13 @@ threading.Thread(target=phone.phone_gui.start, daemon=True).start()
 print("Starting QT:")
 win=mw.MainWindow(ts)
 win2=SetupWindow(ts)
+win3 = SongEditorWindow(ts)
 win.show()
 win2.show()
+
+#TODO ezt át lehetne tenni a setup window-ba egy gombra
+win3.show()
 win.addBridge((bridge))
 win2.addBridge(bridge)
+win3.addBridge(bridge)
 app.exec()

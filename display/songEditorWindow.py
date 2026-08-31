@@ -168,6 +168,8 @@ class EditorWidget(QWidget):
         self.state = top_state
         self.setEnabled(False)
 
+        self.verse_splitter = 3*"\n"
+
         # define buttons
         self.saveNewButton = QPushButton("Mentés új dalként")
         self.saveOverButton = QPushButton("Dal mentése (felülír)")
@@ -211,7 +213,7 @@ class EditorWidget(QWidget):
 
         # set up editor
         self.titleText.setPlainText("\n".join(song.titles))
-        self.versesText.setPlainText((3*"\n").join(map(str.strip, song.verses)))
+        self.versesText.setPlainText(self.verse_splitter.join(map(str.strip, song.verses)))
 
         self.saveOverButton.setEnabled(song._id != -1)
 
@@ -230,11 +232,29 @@ class EditorWidget(QWidget):
 
         return False
     def checkTitles(self):
-        # TODO update corresponding QLabel to show title1, title2, etc
+        #update corresponding QLabel to show number of titles
+        box_text = self.titleText.toPlainText().strip()
+        if box_text == "":
+            self.titleLabel.setText("Nincs cím!")
+        else:
+            title_number = len(box_text.split("\n"))
+            self.titleLabel.setText(f"{title_number} db cím")
+
         self.enableLoader(False)
 
     def checkVerses(self):
-        # TODO update corresponding QLabel to show how the 3*"\n" separates the verses
+        # update corresponding QLabel to show how the verses
+        box_text = self.versesText.toPlainText().strip()
+        if box_text == "":
+            self.versesLabel.setText("Nincs szöveg!")
+        else:
+            # get first 3 words from all verses
+            verses = box_text.split(self.verse_splitter)
+            verses = [f"{i}: "+" ".join(verse.replace("\n", " ").split(" ")[:3])+" ..." for i, verse in enumerate(verses)]
+
+            # update label
+            self.versesLabel.setText("\n".join([f"{len(verses)}db versszak:"]+verses))
+
         self.enableLoader(False)
 
     def connectLoader(self, enableLoader):
@@ -258,12 +278,12 @@ class EditorWidget(QWidget):
             return
 
         self.song.titles = list(map(str.strip, self.titleText.toPlainText().strip().split("\n")))
-        self.song.verses = list(map(str.strip, self.versesText.toPlainText().strip().split(3*"\n")))
+        self.song.verses = list(map(str.strip, self.versesText.toPlainText().strip().split(self.verse_splitter)))
 
         self.state.data.songs[self.song._id] = self.song
         self.bridge.stateUpdated.emit()
 
-        # TODO save to disk in json format
+        # TODO save to disk in JSON format
         dial = OkDialog("Sikeres Mentés")
         dial.exec()
 
@@ -279,7 +299,9 @@ class EditorWidget(QWidget):
         self.setEnabled(False)
 
         self.titleText.setPlainText("")
+        self.titleLabel.setText("")
         self.versesText.setPlainText("")
+        self.versesLabel.setText("")
 
         self.enableLoader(True)
 
